@@ -1,0 +1,43 @@
+From ef53dce05f490b1893fd781e4481c92b0bba595b Mon Sep 17 00:00:00 2001
+From: Peter Jones <pjones@redhat.com>
+Date: Tue, 11 Oct 2016 10:37:21 -0400
+Subject: [PATCH 2/3] Fix an rpmlint complaint.
+
+rpmlint says:
+66  src/lib/efi.c:418: note: expected 'uint8_t *' but argument is of type 'char *'
+
+which sure doesn't seem like a problem worth complaining about, but hey,
+whatever.
+
+Signed-off-by: Peter Jones <example@example.com>
+---
+ src/lib/efi.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/src/lib/efi.c b/src/lib/efi.c
+index a4ce5cf..52cc8cb 100644
+--- a/src/lib/efi.c
++++ b/src/lib/efi.c
+@@ -415,8 +415,8 @@ make_scsi_device_path(void *dest, uint16_t id, uint16_t lun)
+ }
+ 
+ static uint16_t
+-make_harddrive_device_path(void *dest, uint32_t num, uint64_t start, uint64_t size,
+-			   uint8_t *signature,
++make_harddrive_device_path(void *dest, uint32_t num, uint64_t start,
++			   uint64_t size, uint8_t *signature,
+ 			   uint8_t mbr_type, uint8_t signature_type)
+ {
+ 	HARDDRIVE_DEVICE_PATH p;
+@@ -532,7 +532,7 @@ char *make_disk_load_option(char *p, char *disk)
+ 
+     p += make_harddrive_device_path (p, opts.part,
+ 				     start, size,
+-				     signature,
++				     (uint8_t *)signature,
+ 				     mbr_type, signature_type);
+ 
+     efichar_from_char(os_loader_path, opts.loader, sizeof(os_loader_path));
+-- 
+2.10.0
+

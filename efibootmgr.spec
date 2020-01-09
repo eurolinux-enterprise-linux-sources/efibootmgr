@@ -1,7 +1,7 @@
 Summary: EFI Boot Manager
 Name: efibootmgr
 Version: 0.5.4
-Release: 13%{?dist}
+Release: 15%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://linux.dell.com/%{name}/
@@ -21,6 +21,9 @@ Patch2: efibootmgr-0.5.4-fix-unchecked-mallocs.patch
 Patch3: efibootmgr-0.5.4-handle-bootorder-errors-rhbz924892.patch
 Patch4: efibootmgr-0.5.4-longvariables.patch
 Patch5: efibootmgr-0.5.4-no-hd-devpath-padding.patch
+Patch6: 0001-efibootmgr-enlarge-the-buffer-for-variable-descripti.patch
+Patch7: 0002-Fix-an-rpmlint-complaint.patch
+Patch8: 0003-Fix-some-strict-aliasing-rule-violations.patch
 
 %description
 %{name} displays and allows the user to edit the Intel Extensible
@@ -58,6 +61,14 @@ rm -rf %{buildroot}
 %doc README INSTALL COPYING
     
 %changelog
+* Tue Oct 11 2016 Peter Jones <pjones@redhat.com> - 0.5.4-15
+- Fix some issues rpmlint found. 
+  Related: rhbz#1347283
+
+* Mon Aug 15 2016 Peter Jones <pjones@redhat.com> - 0.5.4-14
+- Make the description buffer bigger when printing output.
+  Resolves: rhbz#1347283
+
 * Thu Apr 09 2015 Peter Jones <pjones@redhat.com> - 0.5.4-13
 - Don't pad HD device paths on non-Itanium platforms.
   Resolves: rhbz#1151681

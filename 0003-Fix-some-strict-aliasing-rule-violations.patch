@@ -1,0 +1,48 @@
+From ae3dd6f58c6cf9421caa6eea748a4fade9c5966e Mon Sep 17 00:00:00 2001
+From: Peter Jones <pjones@redhat.com>
+Date: Tue, 11 Oct 2016 10:41:22 -0400
+Subject: [PATCH 3/3] Fix some strict-aliasing rule violations.
+
+rpmlint says:
+
+67  src/lib/efi.c:229: warning: dereferencing pointer 'path' does break strict-aliasing rules
+67  src/lib/efi.c:229: warning: dereferencing pointer 'path' does break strict-aliasing rules
+68  src/lib/efi.c:229: warning: dereferencing pointer 'path' does break strict-aliasing rules
+
+And it's right, so fix it.
+
+Signed-off-by: Peter Jones <example@example.com>
+---
+ src/lib/efi.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/src/lib/efi.c b/src/lib/efi.c
+index 52cc8cb..49ba4c3 100644
+--- a/src/lib/efi.c
++++ b/src/lib/efi.c
+@@ -197,7 +197,7 @@ get_edd_version()
+ 	efi_variable_t var;
+ 	efi_guid_t guid = BLKX_UNKNOWN_GUID;
+ 	char name[80], text_guid[40];
+-	ACPI_DEVICE_PATH *path = (ACPI_DEVICE_PATH *)&(var.Data);
++	ACPI_DEVICE_PATH path;
+ 	int rc = 0;
+ 
+ 	/* Allow global user option override */
+@@ -226,8 +226,11 @@ get_edd_version()
+ 	if (status != EFI_SUCCESS) {
+ 		return 0;
+ 	}
+-	if (path->type == 2 && path->subtype == 1) rc = 3;
+-	else rc = 1;
++	memcpy(&path, &(var.Data), sizeof (path));
++	if (path.type == 2 && path.subtype == 1)
++		rc = 3;
++	else
++		rc = 1;
+ 	return rc;
+ }
+ 
+-- 
+2.10.0
+

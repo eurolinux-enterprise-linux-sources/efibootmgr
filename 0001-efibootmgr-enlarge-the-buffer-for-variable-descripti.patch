@@ -1,0 +1,29 @@
+From f821f6175f30809c1e68905a575384bc0de59fa0 Mon Sep 17 00:00:00 2001
+From: Peter Jones <pjones@redhat.com>
+Date: Mon, 15 Aug 2016 09:43:37 -0400
+Subject: [PATCH] efibootmgr: enlarge the buffer for variable descriptions to
+ be printed
+
+Resolves: rhbz#1347283
+
+Signed-off-by: Peter Jones <example@example.com>
+---
+ src/efibootmgr/efibootmgr.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/efibootmgr/efibootmgr.c b/src/efibootmgr/efibootmgr.c
+index 54d903a..4958c57 100644
+--- a/src/efibootmgr/efibootmgr.c
++++ b/src/efibootmgr/efibootmgr.c
+@@ -654,7 +654,7 @@ show_boot_vars()
+ {
+ 	list_t *pos;
+ 	var_entry_t *boot;
+-	char description[80];
++	char description[1024/sizeof(efi_char16_t)+1];
+ 	EFI_LOAD_OPTION *load_option;
+ 	EFI_DEVICE_PATH *path;
+ 	char text_path[1024], *p;
+-- 
+2.7.4
+
