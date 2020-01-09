@@ -1,7 +1,7 @@
 Summary: EFI Boot Manager
 Name: efibootmgr
 Version: 0.8.0
-Release: 7%{?dist}
+Release: 10%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://github.com/vathpela/%{name}/
@@ -16,34 +16,38 @@ Conflicts: elilo <= 3.6-6
 Obsoletes: elilo <= 3.6-6
 
 Source0: https://github.com/vathpela/%{name}/releases/download/%{name}-%{version}/%{name}-%{version}.tar.bz2
-Patch0000: 0001-Make-EFI-redhat-shim.efi-the-default-bootloader-1036.patch
-Patch0001: 0001-Fix-a-bad-allocation-size.patch
-Patch0002: 0002-Make-the-return-path-something-coverity-can-actually.patch
-Patch0003: 0003-Don-t-leak-our-socket-s-fd-when-determining-network-.patch
-Patch0004: 0004-Fix-another-leaked-fd.patch
-Patch0005: 0005-Fix-some-minor-memory-leaks.patch
-Patch0006: 0006-Make-sure-data-created-for-load-options-is-freed.patch
-Patch0007: 0007-Fix-an-error-path-not-checking-the-return-right-in-m.patch
-Patch0008: 0008-Try-to-avoid-covscan-freaking-out-about-sscanf-with-.patch
-Patch0009: 0009-Get-rid-of-an-invalid-comparison.patch
-Patch0010: 0010-Covscan-can-t-tell-that-we-re-not-filling-a-buffer.patch
-Patch0011: 0011-Don-t-free-something-that-shouldn-t-ever-be-non-NULL.patch
-Patch0012: 0012-Don-t-reuse-a-pointer-to-static-data-and-free-condit.patch
-Patch0013: 0013-Handle-the-case-where-there-are-no-EFI-variables.patch
-Patch0014: 0014-Make-a-free-non-conditional-since-the-condition-can-.patch
-Patch0015: 0015-Check-malloc-return.patch
-Patch0016: 0016-Check-open-s-return-correctly.patch
-Patch0017: 0017-Check-lseek-for-errors.patch
-Patch0018: 0018-Don-t-leak-our-partition-table-structures.patch
-Patch0019: 0001-Don-t-error-on-unset-BootOrder-when-we-re-trying-to-.patch
-Patch0020: 0001-Fix-buffer-overflow-when-remove_from_boot_order-remo.patch
-Patch0021: 0001-Make-sure-BootOrder-gets-shortened-while-deleting.patch
-Patch0022: 0001-Make-o-s-behavior-actually-match-the-documented-beha.patch
-Patch0023: 0002-Make-all-the-other-places-we-re-parsing-XXXX-also-do.patch
-Patch0024: 0001-Set-guid-when-reading-boot-entries-in-read_vars.patch
-Patch0025: 0001-Don-t-check-for-bootnext-existing-until-we-ve-read-t.patch
-Patch0026: 0001-Actually-set-the-values-we-re-using-to-the-results-o.patch
-
+Patch0001: 0001-Make-EFI-redhat-shim.efi-the-default-bootloader.patch
+Patch0002: 0002-Fix-a-bad-allocation-size.patch
+Patch0003: 0003-Make-the-return-path-something-coverity-can-actually.patch
+Patch0004: 0004-Don-t-leak-our-socket-s-fd-when-determining-network-.patch
+Patch0005: 0005-Fix-another-leaked-fd.patch
+Patch0006: 0006-Fix-some-minor-memory-leaks.patch
+Patch0007: 0007-Make-sure-data-created-for-load-options-is-freed.patch
+Patch0008: 0008-Fix-an-error-path-not-checking-the-return-right-in-m.patch
+Patch0009: 0009-Try-to-avoid-covscan-freaking-out-about-sscanf-with-.patch
+Patch0010: 0010-Get-rid-of-an-invalid-comparison.patch
+Patch0011: 0011-Covscan-can-t-tell-that-we-re-not-filling-a-buffer.patch
+Patch0012: 0012-Don-t-free-something-that-shouldn-t-ever-be-non-NULL.patch
+Patch0013: 0013-Don-t-reuse-a-pointer-to-static-data-and-free-condit.patch
+Patch0014: 0014-Handle-the-case-where-there-are-no-EFI-variables.patch
+Patch0015: 0015-Make-a-free-non-conditional-since-the-condition-can-.patch
+Patch0016: 0016-Check-malloc-return.patch
+Patch0017: 0017-Check-open-s-return-correctly.patch
+Patch0018: 0018-Check-lseek-for-errors.patch
+Patch0019: 0019-Don-t-leak-our-partition-table-structures.patch
+Patch0020: 0020-Don-t-error-on-unset-BootOrder-when-we-re-trying-to-.patch
+Patch0021: 0021-Fix-buffer-overflow-when-remove_from_boot_order-remo.patch
+Patch0022: 0022-Make-sure-BootOrder-gets-shortened-while-deleting.patch
+Patch0023: 0023-Make-o-s-behavior-actually-match-the-documented-beha.patch
+Patch0024: 0024-Make-all-the-other-places-we-re-parsing-XXXX-also-do.patch
+Patch0025: 0025-Set-guid-when-reading-boot-entries-in-read_vars.patch
+Patch0026: 0026-Don-t-check-for-bootnext-existing-until-we-ve-read-t.patch
+Patch0027: 0027-Actually-set-the-values-we-re-using-to-the-results-o.patch
+Patch0028: 0028-Add-m-and-M-options-to-support-address-range-mirror.patch
+Patch0029: 0029-Fix-insusufficient-validation-check-of-M-option.patch
+Patch0030: 0030-Add-lacking-description-of-man-for-m-and-M-option.patch
+Patch0031: 0031-Manually-define-NVME_IOCTL_ID.patch
+Patch0032: 0032-efibootmgr.8-Fix-typos-grammar-for-mirroring-options.patch
 
 %description
 %{name} displays and allows the user to edit the Intel Extensible
@@ -83,6 +87,18 @@ rm -rf %{buildroot}
 %doc README INSTALL COPYING
 
 %changelog
+* Tue Jul 19 2016 Peter Jones <pjones@redhat.com> - 0.8.0-10
+- Another man page update for Memory Address Range Mirroring
+  Related: rhbz#1271412
+
+* Wed Jul 13 2016 Peter Jones <pjones@redhat.com> - 0.8.0-9
+- Update man page for Memory Address Range Mirroring
+  Related: rhbz#1271412
+
+* Mon Jun 06 2016 Peter Jones <pjones@redhat.com> - - 0.8.0-8
+- Add options for Memory Address Range Mirroring
+  Resolves: rhbz#1271412
+
 * Thu Jul 09 2015 Peter Jones <pjones@redhat.com> - 0.8.0-7
 - Fix a couple of problems parsing command line options QA is seeing.
   Resolves: rhbz#1241411

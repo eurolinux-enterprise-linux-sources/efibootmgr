@@ -1,7 +1,7 @@
-From 58bfbf6c4fed6dfb875cd59ae9e04986a1cdcd2c Mon Sep 17 00:00:00 2001
+From c6bd43ebb2c7d7a8ef66b3cfc3804ad1ee18ac65 Mon Sep 17 00:00:00 2001
 From: Peter Jones <pjones@redhat.com>
 Date: Wed, 10 Sep 2014 16:07:02 -0400
-Subject: [PATCH 10/18] Covscan can't tell that we're not filling a buffer...
+Subject: [PATCH 11/31] Covscan can't tell that we're not filling a buffer...
 
 Because the pattern here is:
 
@@ -24,7 +24,7 @@ Signed-off-by: Peter Jones <pjones@redhat.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/efibootmgr/efibootmgr.c b/src/efibootmgr/efibootmgr.c
-index 5280180..31807a9 100644
+index d37227c..4ffb90e 100644
 --- a/src/efibootmgr/efibootmgr.c
 +++ b/src/efibootmgr/efibootmgr.c
 @@ -772,7 +772,7 @@ show_boot_vars()
@@ -37,5 +37,5 @@ index 5280180..31807a9 100644
  					+ load_option->file_path_list_length,
  				optional_data_len);
 -- 
-1.9.3
+2.7.4
 

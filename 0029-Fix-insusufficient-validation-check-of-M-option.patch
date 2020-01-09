@@ -1,0 +1,42 @@
+From 701377c07bb7f8a72680d797f22ec30299789fe1 Mon Sep 17 00:00:00 2001
+From: Taku Izumi <izumi.taku@jp.fujitsu.com>
+Date: Tue, 26 Jan 2016 14:32:50 +0900
+Subject: [PATCH 29/31] Fix insusufficient validation check of -M option
+
+The acceptable range of -M (--mirror-above-4G) option should
+be from 0 to 50. So the negative value should be rejected.
+Otherwise unintended value can be specified.
+
+e.g.
+
+ > efibootmgr -M -3
+...
+MirroredPercentageAbove4G: 25.00
+MirrorMemoryBelow4GB: true
+RequestMirroredPercentageAbove4G: 652.36
+RequestMirrorMemoryBelow4GB: true
+
+ 652.36 is invalid value for MirroredPercentageAbove4G and should
+ not be specified.
+
+Signed-off-by: Taku Izumi <izumi.taku@jp.fujitsu.com>
+---
+ src/efibootmgr/efibootmgr.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/efibootmgr/efibootmgr.c b/src/efibootmgr/efibootmgr.c
+index 7cb87fa..ffecc55 100644
+--- a/src/efibootmgr/efibootmgr.c
++++ b/src/efibootmgr/efibootmgr.c
+@@ -1286,7 +1286,7 @@ parse_opts(int argc, char **argv)
+ 		case 'M':
+ 			opts.set_mirror_hi = 1;
+ 			rc = sscanf(optarg, "%f", &fnum);
+-			if (rc == 1 && fnum <= 50) {
++			if (rc == 1 && fnum <= 50 && fnum >= 0) {
+ 				opts.above4g = fnum * 100; /* percent to basis points */
+ 			}
+ 			else {
+-- 
+2.7.4
+

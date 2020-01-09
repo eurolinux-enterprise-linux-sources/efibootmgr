@@ -1,7 +1,7 @@
-From 54879fe911ed1b57e15d641ff8c6656e915f3f50 Mon Sep 17 00:00:00 2001
+From 45305bebdf4bdc2bb6022b4788d034f5593bf19c Mon Sep 17 00:00:00 2001
 From: Peter Jones <pjones@redhat.com>
 Date: Wed, 10 Sep 2014 16:22:21 -0400
-Subject: [PATCH 13/18] Handle the case where there are no EFI variables.
+Subject: [PATCH 14/31] Handle the case where there are no EFI variables.
 
 So we're on an EFI machine with no variables, eh covscan?
 
@@ -24,5 +24,5 @@ index f604a1a..7cdc884 100644
  		*namelist = newlist;
  	} else {
 -- 
-1.9.3
+2.7.4
 

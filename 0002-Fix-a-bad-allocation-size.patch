@@ -1,7 +1,7 @@
-From ff8b967fed11558c448a3554dffd6c2b8fa32cef Mon Sep 17 00:00:00 2001
+From 340766d4d1a745723e9ef53dd3f6b6c175203638 Mon Sep 17 00:00:00 2001
 From: Peter Jones <pjones@redhat.com>
 Date: Wed, 10 Sep 2014 15:27:02 -0400
-Subject: [PATCH 01/18] Fix a bad allocation size.
+Subject: [PATCH 02/31] Fix a bad allocation size.
 
 Covscan found this.
 
@@ -24,5 +24,5 @@ index 133b8bb..6b25dfe 100644
  		return -1;
  	buf = (uint8_t *)load_option;
 -- 
-1.9.3
+2.7.4
 

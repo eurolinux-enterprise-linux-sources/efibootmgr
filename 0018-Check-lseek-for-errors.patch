@@ -1,7 +1,7 @@
-From 3cdcc7ef32e90c411d7f4e14a896f9bf7afa4f29 Mon Sep 17 00:00:00 2001
+From 818be6eb0946100a38bd8a10634940e058fc4c90 Mon Sep 17 00:00:00 2001
 From: Peter Jones <pjones@redhat.com>
 Date: Wed, 10 Sep 2014 16:56:49 -0400
-Subject: [PATCH 17/18] Check lseek() for errors.
+Subject: [PATCH 18/31] Check lseek() for errors.
 
 Covscan.
 
@@ -37,5 +37,5 @@ index 67a8c41..fc2acf3 100644
          memcpy(buffer, iobuf, bytes);
          free(iobuf);
 -- 
-1.9.3
+2.7.4
 

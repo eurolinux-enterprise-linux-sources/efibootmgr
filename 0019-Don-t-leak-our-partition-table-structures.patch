@@ -1,7 +1,7 @@
-From 38fa9b2ceb1095c320ee2aa7482a85fc91ec590d Mon Sep 17 00:00:00 2001
+From dd81884dfa1cd0c2ba97bcb3c0b04a69b14f9b6e Mon Sep 17 00:00:00 2001
 From: Peter Jones <pjones@redhat.com>
 Date: Wed, 10 Sep 2014 17:03:23 -0400
-Subject: [PATCH 18/18] Don't leak our partition table structures.
+Subject: [PATCH 19/31] Don't leak our partition table structures.
 
 Covscan once more.
 
@@ -40,5 +40,5 @@ index fc2acf3..8cb0e39 100644
  
  /*
 -- 
-1.9.3
+2.7.4
 

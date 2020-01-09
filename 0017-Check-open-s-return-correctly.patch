@@ -1,7 +1,7 @@
-From 4bba8fefd9779edda6c1ac89812c3882a277a25d Mon Sep 17 00:00:00 2001
+From f8a8d5d0a20ca118397e82ed81cf3b0ce492d8f4 Mon Sep 17 00:00:00 2001
 From: Peter Jones <pjones@redhat.com>
 Date: Wed, 10 Sep 2014 16:50:08 -0400
-Subject: [PATCH 16/18] Check open()s return correctly.
+Subject: [PATCH 17/31] Check open()s return correctly.
 
 Covscan.
 
@@ -24,5 +24,5 @@ index 4536a67..337909e 100644
  		return 1;
  	}
 -- 
-1.9.3
+2.7.4
 

@@ -1,7 +1,7 @@
-From 34410d6cf5a411f14f051045867cb2a7908e9330 Mon Sep 17 00:00:00 2001
+From 705c87aab92e20a8f71207895167632f0539e1fc Mon Sep 17 00:00:00 2001
 From: Peter Jones <pjones@redhat.com>
 Date: Wed, 10 Sep 2014 15:34:12 -0400
-Subject: [PATCH 04/18] Fix another leaked fd.
+Subject: [PATCH 05/31] Fix another leaked fd.
 
 Covscan some more.
 
@@ -27,5 +27,5 @@ index 8ba0e54..4218eb5 100644
  	}
  
 -- 
-1.9.3
+2.7.4
 

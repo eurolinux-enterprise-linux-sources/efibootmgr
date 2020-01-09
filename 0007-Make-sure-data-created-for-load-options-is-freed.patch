@@ -1,7 +1,7 @@
-From 2c557c3168b37b42d4dec1b5aa2298e7ce7597ad Mon Sep 17 00:00:00 2001
+From e0b5d2be5c1eee242b347c257c950fcaa952c0b3 Mon Sep 17 00:00:00 2001
 From: Peter Jones <pjones@redhat.com>
 Date: Wed, 10 Sep 2014 15:46:04 -0400
-Subject: [PATCH 06/18] Make sure data created for load options is freed.
+Subject: [PATCH 07/31] Make sure data created for load options is freed.
 
 Covscan... may not be right about this one.  But it's better to be sure.
 
@@ -46,5 +46,5 @@ index 4218eb5..7dc3c92 100644
  	return 0;
  }
 -- 
-1.9.3
+2.7.4
 

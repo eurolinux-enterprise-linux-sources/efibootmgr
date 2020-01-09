@@ -1,7 +1,7 @@
-From 611460349c214d9655a4ee06757fbcb5bdf6e2a3 Mon Sep 17 00:00:00 2001
+From 7bb264df83a5e1f6182bb73594a058c1d3b7dc29 Mon Sep 17 00:00:00 2001
 From: Peter Jones <pjones@redhat.com>
 Date: Wed, 10 Sep 2014 15:32:59 -0400
-Subject: [PATCH 03/18] Don't leak our socket's fd when determining network
+Subject: [PATCH 04/31] Don't leak our socket's fd when determining network
  info.
 
 Covscan again.
@@ -54,5 +54,5 @@ index 6b25dfe..8ba0e54 100644
  	buf_offset = 0;
  	needed = make_acpi_device_path(opts.acpi_hid, opts.acpi_uid, buf,
 -- 
-1.9.3
+2.7.4
 

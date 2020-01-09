@@ -1,7 +1,7 @@
-From 7178a860614979e16ba9895aee46654574de7485 Mon Sep 17 00:00:00 2001
+From b6270d161ce2b5543ae679c893f3c0d8df0f67c9 Mon Sep 17 00:00:00 2001
 From: Peter Jones <pjones@redhat.com>
 Date: Thu, 9 Jul 2015 13:06:42 -0400
-Subject: [PATCH] Don't check for bootnext existing until we've read the
+Subject: [PATCH 26/31] Don't check for bootnext existing until we've read the
  variables.
 
 Resolves: rhbz#1241411
@@ -29,5 +29,5 @@ index b4417c8..4fe0448 100644
  			break;
  		}
 -- 
-1.8.3.1
+2.7.4
 

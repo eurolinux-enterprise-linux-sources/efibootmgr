@@ -1,8 +1,8 @@
-From 91ea62136543582a9d9effd32bcccce12b748114 Mon Sep 17 00:00:00 2001
+From 1bc44d6c4fe0498f8ed2c52164f034ba483ccfb2 Mon Sep 17 00:00:00 2001
 From: Peter Jones <pjones@redhat.com>
 Date: Wed, 15 Oct 2014 10:35:56 -0400
-Subject: [PATCH] Don't error on unset BootOrder when we're trying to add to or
- rm from it.
+Subject: [PATCH 20/31] Don't error on unset BootOrder when we're trying to add
+ to or rm from it.
 
 Also print some better error messases here and there.
 
@@ -562,5 +562,5 @@ index 96071d7..423bc16 100644
  Boot Manager timeout, in \fIseconds\fR\&.
  .TP
 -- 
-1.9.3
+2.7.4
 

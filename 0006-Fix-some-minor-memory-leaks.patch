@@ -1,7 +1,7 @@
-From 9b5950b9c6dd2322dadf2f54ecbbd24eddede278 Mon Sep 17 00:00:00 2001
+From 239bd4013cd2909f5e0f9600be88f52b0248a032 Mon Sep 17 00:00:00 2001
 From: Peter Jones <pjones@redhat.com>
 Date: Wed, 10 Sep 2014 15:40:29 -0400
-Subject: [PATCH 05/18] Fix some minor memory leaks.
+Subject: [PATCH 06/31] Fix some minor memory leaks.
 
 Well, one and not really another.  Covscan is /almost/ a great tool.
 
@@ -11,7 +11,7 @@ Signed-off-by: Peter Jones <pjones@redhat.com>
  1 file changed, 8 insertions(+), 2 deletions(-)
 
 diff --git a/src/efibootmgr/efibootmgr.c b/src/efibootmgr/efibootmgr.c
-index 1c65c07..88a4ef7 100644
+index 5ca97ab..0a6ca5a 100644
 --- a/src/efibootmgr/efibootmgr.c
 +++ b/src/efibootmgr/efibootmgr.c
 @@ -627,8 +627,11 @@ construct_boot_order(char *bootorder, int keep,
@@ -41,5 +41,5 @@ index 1c65c07..88a4ef7 100644
  	memcpy(new_data, data, data_size);
  	memcpy(new_data + (data_size / sizeof (*new_data)), bo.data,
 -- 
-1.9.3
+2.7.4
 

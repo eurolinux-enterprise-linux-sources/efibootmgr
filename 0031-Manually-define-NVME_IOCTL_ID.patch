@@ -1,0 +1,37 @@
+From 1bec5911f25f9d7990cd1c92c1376a2aa36fbd20 Mon Sep 17 00:00:00 2001
+From: Peter Jones <pjones@redhat.com>
+Date: Mon, 6 Jun 2016 15:18:57 -0400
+Subject: [PATCH 31/31] Manually define NVME_IOCTL_ID.
+
+The kernel has changed and the include file isn't at the same place
+between various arches.  Since we just need the ID, defined it instead
+of worrying about where it's from.
+
+Related: rhbz#1271412
+
+Signed-off-by: Peter Jones <pjones@redhat.com>
+---
+ src/lib/scsi_ioctls.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/src/lib/scsi_ioctls.c b/src/lib/scsi_ioctls.c
+index 3aaa933..2e0b5b4 100644
+--- a/src/lib/scsi_ioctls.c
++++ b/src/lib/scsi_ioctls.c
+@@ -24,9 +24,12 @@
+ #include <sys/stat.h>
+ #include <fcntl.h>
+ #include <sys/ioctl.h>
+-#include <linux/nvme.h>
+ #include "scsi_ioctls.h"
+ 
++#ifndef NVME_IOCTL_ID
++#define NVME_IOCTL_ID		_IO('N', 0x40)
++#endif
++
+ int
+ get_nvme_ns_id(int fd, uint32_t *ns_id)
+ {
+-- 
+2.7.4
+
