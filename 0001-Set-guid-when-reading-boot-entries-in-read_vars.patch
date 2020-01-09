@@ -1,0 +1,25 @@
+From 272eeb462072976c58dbf2c3085e5a4c59576a15 Mon Sep 17 00:00:00 2001
+From: Alexis Murzeau <amurzeau@gmail.com>
+Date: Sat, 18 Apr 2015 23:03:23 +0200
+Subject: [PATCH] Set guid when reading boot entries in read_vars.
+
+set_active_state use boot->guid, so set it to EFI_GLOBAL_GUID.
+---
+ src/efibootmgr/efibootmgr.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/efibootmgr/efibootmgr.c b/src/efibootmgr/efibootmgr.c
+index 4c682c1..ba25afa 100644
+--- a/src/efibootmgr/efibootmgr.c
++++ b/src/efibootmgr/efibootmgr.c
+@@ -123,6 +123,7 @@ read_vars(char **namelist,
+ 			entry->attributes = entry->attributes & ~(1 << 31);
+ 
+ 			entry->name = namelist[i];
++			entry->guid = EFI_GLOBAL_GUID;
+ 			list_add_tail(&entry->list, head);
+ 		}
+ 	}
+-- 
+2.4.3
+

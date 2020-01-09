@@ -1,0 +1,33 @@
+From 7178a860614979e16ba9895aee46654574de7485 Mon Sep 17 00:00:00 2001
+From: Peter Jones <pjones@redhat.com>
+Date: Thu, 9 Jul 2015 13:06:42 -0400
+Subject: [PATCH] Don't check for bootnext existing until we've read the
+ variables.
+
+Resolves: rhbz#1241411
+
+Signed-off-by: root <root@localhost.localdomain>
+---
+ src/efibootmgr/efibootmgr.c | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/src/efibootmgr/efibootmgr.c b/src/efibootmgr/efibootmgr.c
+index b4417c8..4fe0448 100644
+--- a/src/efibootmgr/efibootmgr.c
++++ b/src/efibootmgr/efibootmgr.c
+@@ -1177,12 +1177,6 @@ parse_opts(int argc, char **argv)
+ 					result);
+ 				exit(1);
+ 			}
+-			if (!is_current_boot_entry(result)) {
+-				fprintf(stderr,
+-					"Boot entry %04lX does not exist\n",
+-					result);
+-				exit(1);
+-			}
+ 			opts.bootnext = result;
+ 			break;
+ 		}
+-- 
+1.8.3.1
+

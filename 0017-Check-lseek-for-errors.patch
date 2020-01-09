@@ -1,0 +1,41 @@
+From 3cdcc7ef32e90c411d7f4e14a896f9bf7afa4f29 Mon Sep 17 00:00:00 2001
+From: Peter Jones <pjones@redhat.com>
+Date: Wed, 10 Sep 2014 16:56:49 -0400
+Subject: [PATCH 17/18] Check lseek() for errors.
+
+Covscan.
+
+Signed-off-by: Peter Jones <pjones@redhat.com>
+---
+ src/lib/gpt.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/src/lib/gpt.c b/src/lib/gpt.c
+index 67a8c41..fc2acf3 100644
+--- a/src/lib/gpt.c
++++ b/src/lib/gpt.c
+@@ -221,6 +221,7 @@ read_lba(int fd, uint64_t lba, void *buffer, size_t bytes)
+         void *iobuf;
+         size_t iobuf_size;
+         int rc;
++	off_t new_offset;
+ 
+         iobuf_size = lcm(bytes, sector_size);
+         rc = posix_memalign(&iobuf, sector_size, iobuf_size);
+@@ -228,8 +229,11 @@ read_lba(int fd, uint64_t lba, void *buffer, size_t bytes)
+                 return rc;
+         memset(iobuf, 0, bytes);
+ 
+-
+-        lseek(fd, offset, SEEK_SET);
++        new_offset = lseek(fd, offset, SEEK_SET);
++	if (new_offset == (off_t)-1) {
++		free(iobuf);
++		return 0;
++	}
+         bytesread = read(fd, iobuf, iobuf_size);
+         memcpy(buffer, iobuf, bytes);
+         free(iobuf);
+-- 
+1.9.3
+

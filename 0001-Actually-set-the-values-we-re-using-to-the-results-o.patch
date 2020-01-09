@@ -1,0 +1,47 @@
+From 70030c8fb08ae523204170cf3cc5918c0f6ba4a7 Mon Sep 17 00:00:00 2001
+From: Peter Jones <pjones@redhat.com>
+Date: Tue, 21 Oct 2014 16:02:13 -0400
+Subject: [PATCH] Actually /set/ the values we're using to the results of
+ parsing the number.
+
+This should fix https://github.com/vathpela/efibootmgr/issues/18
+
+Signed-off-by: Peter Jones <pjones@redhat.com>
+---
+ src/efibootmgr/efibootmgr.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/src/efibootmgr/efibootmgr.c b/src/efibootmgr/efibootmgr.c
+index 546b55c..85dc73e 100644
+--- a/src/efibootmgr/efibootmgr.c
++++ b/src/efibootmgr/efibootmgr.c
+@@ -1086,7 +1086,7 @@ parse_opts(int argc, char **argv)
+ 				exit(1);
+ 			}
+ 
+-			opts.bootnum = num;
++			opts.bootnum = result;
+ 			break;
+ 		}
+ 		case 'c':
+@@ -1140,7 +1140,7 @@ parse_opts(int argc, char **argv)
+ 				exit(1);
+ 			}
+ 
+-			opts.acpi_hid = num;
++			opts.acpi_hid = result;
+ 			break;
+ 		}
+ 		case 'i':
+@@ -1229,7 +1229,7 @@ parse_opts(int argc, char **argv)
+ 				exit(1);
+ 			}
+ 
+-			opts.acpi_uid = num;
++			opts.acpi_uid = result;
+ 			break;
+ 		}
+ 		case 'v':
+-- 
+2.4.3
+

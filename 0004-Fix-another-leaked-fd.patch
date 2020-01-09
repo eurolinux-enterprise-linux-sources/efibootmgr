@@ -1,0 +1,31 @@
+From 34410d6cf5a411f14f051045867cb2a7908e9330 Mon Sep 17 00:00:00 2001
+From: Peter Jones <pjones@redhat.com>
+Date: Wed, 10 Sep 2014 15:34:12 -0400
+Subject: [PATCH 04/18] Fix another leaked fd.
+
+Covscan some more.
+
+Signed-off-by: Peter Jones <pjones@redhat.com>
+---
+ src/lib/efi.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/src/lib/efi.c b/src/lib/efi.c
+index 8ba0e54..4218eb5 100644
+--- a/src/lib/efi.c
++++ b/src/lib/efi.c
+@@ -528,8 +528,10 @@ make_disk_load_option(char *disk, uint8_t *buf, size_t size)
+ 			needed = make_edd10_device_path(opts.edd10_devicenum,
+ 							buf, size);
+ 		}
+-		if (needed < 0)
++		if (needed < 0) {
++			close(disk_fd);
+ 			return needed;
++		}
+ 		buf_offset += needed;
+ 	}
+ 
+-- 
+1.9.3
+

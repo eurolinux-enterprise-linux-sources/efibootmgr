@@ -1,0 +1,28 @@
+From ff8b967fed11558c448a3554dffd6c2b8fa32cef Mon Sep 17 00:00:00 2001
+From: Peter Jones <pjones@redhat.com>
+Date: Wed, 10 Sep 2014 15:27:02 -0400
+Subject: [PATCH 01/18] Fix a bad allocation size.
+
+Covscan found this.
+
+Signed-off-by: Peter Jones <pjones@redhat.com>
+---
+ src/lib/efi.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/lib/efi.c b/src/lib/efi.c
+index 133b8bb..6b25dfe 100644
+--- a/src/lib/efi.c
++++ b/src/lib/efi.c
+@@ -717,7 +717,7 @@ make_linux_load_option(uint8_t **data, size_t *data_size)
+ 	size_t needed;
+ 	off_t buf_offset = 0, desc_offset;
+ 
+-	load_option = calloc(1, sizeof (load_option));
++	load_option = calloc(1, sizeof (*load_option));
+ 	if (load_option == NULL)
+ 		return -1;
+ 	buf = (uint8_t *)load_option;
+-- 
+1.9.3
+

@@ -1,0 +1,28 @@
+From 54879fe911ed1b57e15d641ff8c6656e915f3f50 Mon Sep 17 00:00:00 2001
+From: Peter Jones <pjones@redhat.com>
+Date: Wed, 10 Sep 2014 16:22:21 -0400
+Subject: [PATCH 13/18] Handle the case where there are no EFI variables.
+
+So we're on an EFI machine with no variables, eh covscan?
+
+Signed-off-by: Peter Jones <pjones@redhat.com>
+---
+ src/lib/efi.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/lib/efi.c b/src/lib/efi.c
+index f604a1a..7cdc884 100644
+--- a/src/lib/efi.c
++++ b/src/lib/efi.c
+@@ -112,7 +112,7 @@ read_var_names(filter_t filter, char ***namelist)
+ 
+ 		newlist = tmp;
+ 	}
+-	if (rc == 0) {
++	if (rc == 0 && newlist) {
+ 		qsort(newlist, nentries, sizeof (char *), cmpstringp);
+ 		*namelist = newlist;
+ 	} else {
+-- 
+1.9.3
+

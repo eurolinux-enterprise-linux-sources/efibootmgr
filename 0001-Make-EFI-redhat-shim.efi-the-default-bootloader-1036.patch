@@ -1,0 +1,44 @@
+From 0c833b1e099dd0ea4b9501baab579a79d9b561fb Mon Sep 17 00:00:00 2001
+From: Peter Jones <pjones@redhat.com>
+Date: Wed, 14 Apr 2010 16:06:48 -0400
+Subject: [PATCH 1/1] Make \EFI\redhat\shim.efi the default bootloader
+
+Make \EFI\redhat\shim.efi the default bootloader instead of \elilo.efi .
+---
+ src/efibootmgr/efibootmgr.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/src/efibootmgr/efibootmgr.c b/src/efibootmgr/efibootmgr.c
+index 5af2cad..c2c7284 100644
+--- a/src/efibootmgr/efibootmgr.c
++++ b/src/efibootmgr/efibootmgr.c
+@@ -18,7 +18,7 @@
+     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ 
+ 
+-  This must tie the EFI_DEVICE_PATH to /boot/efi/EFI/redhat/grub.efi
++  This must tie the EFI_DEVICE_PATH to /boot/efi/EFI/redhat/shim.efi
+   The  EFI_DEVICE_PATH will look something like:
+     ACPI device path, length 12 bytes
+     Hardware Device Path, PCI, length 6 bytes
+@@ -893,7 +893,7 @@ usage()
+ 	printf("\t-g | --gpt            force disk with invalid PMBR to be treated as GPT\n");
+ 	printf("\t-H | --acpi_hid XXXX  set the ACPI HID (used with -i)\n");
+ 	printf("\t-i | --iface name     create a netboot entry for the named interface\n");
+-	printf("\t-l | --loader name     (defaults to \\EFI\\redhat\\grub.efi)\n");
++	printf("\t-l | --loader name     (defaults to \\EFI\\redhat\\shim.efi)\n");
+ 	printf("\t-L | --label label     Boot manager display label (defaults to \"Linux\")\n");
+ 	printf("\t-n | --bootnext XXXX   set BootNext to XXXX (hex)\n");
+ 	printf("\t-N | --delete-bootnext delete BootNext\n");
+@@ -921,7 +921,7 @@ set_default_opts()
+ 	opts.active          = -1;   /* Don't set it */
+ 	opts.timeout         = -1;   /* Don't set it */
+ 	opts.edd10_devicenum = 0x80;
+-	opts.loader          = "\\EFI\\redhat\\grub.efi";
++	opts.loader          = "\\EFI\\redhat\\shim.efi";
+ 	opts.label           = "Linux";
+ 	opts.disk            = "/dev/sda";
+ 	opts.iface           = NULL;
+-- 
+1.9.3
+

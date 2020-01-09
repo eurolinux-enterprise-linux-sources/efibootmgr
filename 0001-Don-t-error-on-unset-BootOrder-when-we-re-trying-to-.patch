@@ -1,0 +1,566 @@
+From 91ea62136543582a9d9effd32bcccce12b748114 Mon Sep 17 00:00:00 2001
+From: Peter Jones <pjones@redhat.com>
+Date: Wed, 15 Oct 2014 10:35:56 -0400
+Subject: [PATCH] Don't error on unset BootOrder when we're trying to add to or
+ rm from it.
+
+Also print some better error messases here and there.
+
+Signed-off-by: Peter Jones <pjones@redhat.com>
+---
+ README                      |   1 -
+ src/efibootmgr/efibootmgr.c | 126 +++++++++++++++++++++++++++-----------------
+ src/lib/efi.c               |  95 +++++++++++++++++++--------------
+ src/man/man8/efibootmgr.8   |   3 --
+ 4 files changed, 131 insertions(+), 94 deletions(-)
+
+diff --git a/README b/README
+index 3bc0a26..edbce4b 100644
+--- a/README
++++ b/README
+@@ -29,7 +29,6 @@ usage: efibootmgr [options]
+ 	-O | --delete-bootorder delete BootOrder
+ 	-p | --part part       (defaults to 1) containing loader
+ 	-q | --quiet           be quiet
+-	--test filename   don't write to NVRAM, write to filename
+ 	-t | --timeout seconds   Boot manager timeout
+ 	-T | --delete-timeout    delete Timeout value
+ 	-u | --unicode | --UCS-2  pass extra args as UCS-2 (default is ASCII)
+diff --git a/src/efibootmgr/efibootmgr.c b/src/efibootmgr/efibootmgr.c
+index 4d80f87..eb13942 100644
+--- a/src/efibootmgr/efibootmgr.c
++++ b/src/efibootmgr/efibootmgr.c
+@@ -33,6 +33,7 @@
+ #define _GNU_SOURCE
+ 
+ #include <ctype.h>
++#include <err.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+@@ -123,7 +124,7 @@ read_vars(char **namelist,
+ 	}
+ 	return;
+ err:
+-	fprintf(stderr, "efibootmgr: %m\n");
++	warn("efibootmgr");
+ 	exit(1);
+ }
+ 
+@@ -242,16 +243,20 @@ make_boot_var(list_t *boot_list)
+ 		free_number = opts.bootnum;
+ 	}
+ 
+-	if (free_number == -1)
++	if (free_number == -1) {
++		warn("efibootmgr: no available boot variables");
+ 		return NULL;
++	}
+ 
+ 	/* Create a new efi_variable_t object
+ 	   and populate it.
+ 	*/
+ 
+ 	boot = calloc(1, sizeof(*boot));
+-	if (!boot)
++	if (!boot) {
++		warn("efibootmgr");
+ 		return NULL;
++	}
+ 	if (make_linux_load_option(&boot->data, &boot->data_size) < 0)
+ 		goto err_boot_entry;
+ 	if (append_extra_args(&boot->data, &boot->data_size) < 0)
+@@ -260,8 +265,10 @@ make_boot_var(list_t *boot_list)
+ 	boot->num = free_number;
+ 	boot->guid = EFI_GLOBAL_VARIABLE;
+ 	rc = asprintf(&boot->name, "Boot%04X", free_number);
+-	if (rc < 0)
++	if (rc < 0) {
++		warn("efibootmgr");
+ 		goto err_boot_entry;
++	}
+ 	boot->attributes = EFI_VARIABLE_NON_VOLATILE |
+ 			    EFI_VARIABLE_BOOTSERVICE_ACCESS |
+ 			    EFI_VARIABLE_RUNTIME_ACCESS;
+@@ -272,8 +279,12 @@ make_boot_var(list_t *boot_list)
+ 	list_add_tail(&boot->list, boot_list);
+ 	return boot;
+ err_boot_entry:
+-	if (boot->name)
++	if (boot->name) {
++		warn("Could not set variable %s", boot->name);
+ 		free(boot->name);
++	} else {
++		warn("Could not set variable");
++	}
+ 	if (boot->data)
+ 		free(boot->data);
+ 	free(boot);
+@@ -313,6 +324,15 @@ read_boot_order(efi_variable_t **boot_order)
+ }
+ 
+ static int
++set_boot_u16(const char *name, uint16_t num)
++{
++	return efi_set_variable(EFI_GLOBAL_GUID, name, (uint8_t *)&num,
++				sizeof (num), EFI_VARIABLE_NON_VOLATILE |
++					      EFI_VARIABLE_BOOTSERVICE_ACCESS |
++					      EFI_VARIABLE_RUNTIME_ACCESS);
++}
++
++static int
+ add_to_boot_order(uint16_t num)
+ {
+ 	efi_variable_t *boot_order = NULL;
+@@ -321,8 +341,11 @@ add_to_boot_order(uint16_t num)
+ 	int rc;
+ 
+ 	rc = read_boot_order(&boot_order);
+-	if (rc < 0)
++	if (rc < 0) {
++		if (errno == ENOENT)
++			rc = set_boot_u16("BootOrder", num);
+ 		return rc;
++	}
+ 
+ 	/* We've now got an array (in boot_order->data) of the
+ 	 * boot order.  First add our entry, then copy the old array.
+@@ -358,8 +381,11 @@ remove_dupes_from_boot_order(void)
+ 	int rc;
+ 
+ 	rc = read_boot_order(&boot_order);
+-	if (rc < 0)
++	if (rc < 0) {
++		if (errno == ENOENT)
++			rc = 0;
+ 		return rc;
++	}
+ 
+ 	old_data = (uint16_t *)(boot_order->data);
+ 	/* Start with the same size */
+@@ -409,8 +435,11 @@ remove_from_boot_order(uint16_t num)
+ 	int rc;
+ 
+ 	rc = read_boot_order(&boot_order);
+-	if (rc < 0)
++	if (rc < 0) {
++		if (errno == ENOENT)
++			rc = 0;
+ 		return rc;
++	}
+ 
+ 	/* We've now got an array (in boot_order->data) of the
+ 	   boot order.  Simply copy the array, skipping the
+@@ -470,15 +499,6 @@ read_boot_u16(const char *name)
+ }
+ 
+ static int
+-set_boot_u16(const char *name, uint16_t num)
+-{
+-	return efi_set_variable(EFI_GLOBAL_GUID, name, (uint8_t *)&num,
+-				sizeof (num), EFI_VARIABLE_NON_VOLATILE |
+-					      EFI_VARIABLE_BOOTSERVICE_ACCESS |
+-					      EFI_VARIABLE_RUNTIME_ACCESS);
+-}
+-
+-static int
+ delete_boot_var(uint16_t num)
+ {
+ 	int rc;
+@@ -490,13 +510,18 @@ delete_boot_var(uint16_t num)
+ 	rc = efi_del_variable(EFI_GLOBAL_GUID, name);
+ 
+ 	/* For backwards compatibility, try to delete abcdef entries as well */
+-	if (rc < 0 && errno == ENOENT) {
+-		snprintf(name, sizeof(name), "Boot%04x", num);
+-		rc = efi_del_variable(EFI_GLOBAL_GUID, name);
++	if (rc < 0) {
++		if (errno == ENOENT) {
++			snprintf(name, sizeof(name), "Boot%04x", num);
++			rc = efi_del_variable(EFI_GLOBAL_GUID, name);
++		} else if (errno == EPERM) {
++			warn("Could not delete Boot%04X", num);
++			return rc;
++		}
+ 	}
+ 
+ 	if (rc < 0) {
+-		fprintf(stderr,"\nboot entry: %X not found\n\n",num);
++		warnx("Boot entry %04X not found", num);
+ 		return rc;
+ 	}
+ 	list_for_each_safe(pos, n, &boot_entry_list) {
+@@ -512,7 +537,6 @@ delete_boot_var(uint16_t num)
+ 	return 0;
+ }
+ 
+-
+ static void
+ set_var_nums(list_t *list)
+ {
+@@ -1177,34 +1201,28 @@ main(int argc, char **argv)
+ 	if (opts.iface && (
+ 			opts.acpi_hid < 0 || opts.acpi_uid < 0 ||
+ 			opts.acpi_hid > UINT32_MAX ||
+-			opts.acpi_uid > UINT32_MAX)) {
+-		fprintf(stderr, "\nYou must specify the ACPI HID and UID when using -i.\n\n");
+-		return 1;
+-	}
++			opts.acpi_uid > UINT32_MAX))
++		errx(1, "You must specify the ACPI HID and UID when using -i.");
+ 
+-	if (!efi_variables_supported()) {
+-		fprintf(stderr, "\nEFI variables are not supported on this system.\n\n");
+-		return 1;
+-	}
++	if (!efi_variables_supported())
++		errx(2, "EFI variables are not supported on this system.");
+ 
+ 	read_boot_var_names(&boot_names);
+ 	read_vars(boot_names, &boot_entry_list);
+ 	set_var_nums(&boot_entry_list);
+ 
+ 	if (opts.delete_boot) {
+-		if (opts.bootnum == -1) {
+-			fprintf(stderr, "\nYou must specify a boot entry to delete (see the -b option).\n\n");
+-			return 1;
+-		}
++		if (opts.bootnum == -1)
++			errx(3, "You must specify a boot entry to delete "
++				"(see the -b option).");
+ 		else
+ 			ret = delete_boot_var(opts.bootnum);
+ 	}
+ 
+ 	if (opts.active >= 0) {
+-		if (opts.bootnum == -1) {
+-			fprintf(stderr, "\nYou must specify a boot entry to activate (see the -b option).\n\n");
+-			return 1;
+-		}
++		if (opts.bootnum == -1)
++			errx(4, "You must specify a boot entry to activate "
++				"(see the -b option");
+ 		else
+ 			ret=set_active_state();
+ 	}
+@@ -1212,47 +1230,57 @@ main(int argc, char **argv)
+ 	if (opts.create) {
+ 		warn_duplicate_name(&boot_entry_list);
+ 		new_boot = make_boot_var(&boot_entry_list);
+-		if (!new_boot) {
+-			fprintf(stderr, "\nCould not prepare boot variable: %m\n\n");
+-			return 1;
+-		}
++		if (!new_boot)
++			err(5, "Could not prepare boot variable");
+ 
+ 		/* Put this boot var in the right BootOrder */
+ 		if (new_boot)
+ 			ret=add_to_boot_order(new_boot->num);
++		if (ret)
++			err(6, "Could not add entry to BootOrder");
+ 	}
+ 
+ 	if (opts.delete_bootorder) {
+ 		ret = efi_del_variable(EFI_GLOBAL_GUID, "BootOrder");
++		err(7, "Could not remove entry from BootOrder");
+ 	}
+ 
+ 	if (opts.bootorder) {
+ 		ret = set_boot_order(opts.keep_old_entries);
++		if (ret)
++			err(8, "Could not set BootOrder");
+ 	}
+ 
+ 	if (opts.deduplicate) {
+ 		ret = remove_dupes_from_boot_order();
++		if (ret)
++			err(9, "Could not set BootOrder");
+ 	}
+ 
+ 	if (opts.delete_bootnext) {
+ 		ret = efi_del_variable(EFI_GLOBAL_GUID, "BootNext");
++		if (ret)
++			err(10, "Could not set BootNext");
+ 	}
+ 
+ 	if (opts.delete_timeout) {
+ 		ret = efi_del_variable(EFI_GLOBAL_GUID, "Timeout");
++		if (ret)
++			err(11, "Could not delete Timeout");
+ 	}
+ 
+ 	if (opts.bootnext >= 0) {
+-		if (!is_current_boot_entry(opts.bootnext & 0xFFFF)){
+-			fprintf (stderr,"\n\nboot entry %X does not exist\n\n",
+-				opts.bootnext);
+-			return 1;
+-		}
+-		ret=set_boot_u16("BootNext", opts.bootnext & 0xFFFF);
++		if (!is_current_boot_entry(opts.bootnext & 0xFFFF))
++			errx(12, "Boot entry %X does not exist", opts.bootnext);
++		ret = set_boot_u16("BootNext", opts.bootnext & 0xFFFF);
++		if (ret)
++			err(13, "Could not set BootNext");
+ 	}
+ 
+ 	if (opts.set_timeout) {
+-		ret=set_boot_u16("Timeout", opts.timeout);
++		ret = set_boot_u16("Timeout", opts.timeout);
++		if (ret)
++			err(14, "Could not set Timeout");
+ 	}
+ 
+ 	if (!opts.quiet && ret == 0) {
+diff --git a/src/lib/efi.c b/src/lib/efi.c
+index 7cdc884..d19c00d 100644
+--- a/src/lib/efi.c
++++ b/src/lib/efi.c
+@@ -19,6 +19,7 @@
+  */
+ 
+ #include <ctype.h>
++#include <err.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+@@ -502,7 +503,6 @@ static ssize_t
+ make_disk_load_option(char *disk, uint8_t *buf, size_t size)
+ {
+ 	int disk_fd=0;
+-	char buffer[80];
+ 	char signature[16];
+ 	int rc, edd_version=0;
+ 	uint8_t mbr_type=0, signature_type=0;
+@@ -514,11 +514,8 @@ make_disk_load_option(char *disk, uint8_t *buf, size_t size)
+ 	memset(signature, 0, sizeof(signature));
+ 
+ 	disk_fd = open(opts.disk, O_RDWR);
+-	if (disk_fd == -1) {
+-		sprintf(buffer, "Could not open disk %s", opts.disk);
+-		perror(buffer);
+-		return -1;
+-	}
++	if (disk_fd == -1)
++		err(5, "Could not open disk %s", opts.disk);
+ 
+ 	if (opts.edd_version) {
+ 		edd_version = get_edd_version();
+@@ -539,12 +536,10 @@ make_disk_load_option(char *disk, uint8_t *buf, size_t size)
+ 				  &part_start, &part_size, signature,
+ 				  &mbr_type, &signature_type);
+ 	close(disk_fd);
+-	if (rc) {
+-		fprintf(stderr, "Error: no partition information on disk %s.\n"
+-			"       Cowardly refusing to create a boot option.\n",
++	if (rc)
++		errx(5, "No partition information on disk %s.\n"
++			"Cowardly refusing to create a boot option.\n",
+ 			opts.disk);
+-		return -1;
+-	}
+ 
+ 	needed = make_harddrive_device_path(opts.part, part_start, part_size,
+ 					(uint8_t *)signature, mbr_type,
+@@ -724,10 +719,13 @@ make_linux_load_option(uint8_t **data, size_t *data_size)
+ 	uint8_t *buf;
+ 	ssize_t needed;
+ 	off_t buf_offset = 0, desc_offset;
++	int rc;
+ 
+ 	load_option = calloc(1, sizeof (*load_option));
+-	if (load_option == NULL)
++	if (load_option == NULL) {
++		fprintf(stderr, "efibootmgr: %m\n");
+ 		return -1;
++	}
+ 	buf = (uint8_t *)load_option;
+ 	buf_offset = 0;
+ 
+@@ -755,21 +753,33 @@ make_linux_load_option(uint8_t **data, size_t *data_size)
+ 	if (opts.iface) {
+ 		needed = make_net_load_option(opts.iface, NULL, 0);
+ 		if (needed < 0) {
++			fprintf(stderr, "efibootmgr: could not create load option: %m\n");
+ 			free(buf);
+ 			return needed;
+ 		}
+ 		buf = extend(load_option, load_option_size, needed);
+-		make_net_load_option(opts.iface, buf + buf_offset, needed);
++		rc = make_net_load_option(opts.iface, buf + buf_offset, needed);
+ 		buf_offset += needed;
++		if (rc < 0) {
++			fprintf(stderr, "efibootmgr: could not create load option: %m\n");
++			free(buf);
++			return rc;
++		}
+ 	} else {
+ 		needed = make_disk_load_option(opts.iface, NULL, 0);
+ 		if (needed < 0) {
++			fprintf(stderr, "efibootmgr: could not create load option: %m\n");
+ 			free(buf);
+ 			return needed;
+ 		}
+ 		buf = extend(load_option, load_option_size, needed);
+-		make_disk_load_option(opts.iface, buf + buf_offset, needed);
++		rc = make_disk_load_option(opts.iface, buf + buf_offset, needed);
+ 		buf_offset += needed;
++		if (rc < 0) {
++			fprintf(stderr, "efibootmgr: could not create load option: %m\n");
++			free(buf);
++			return rc;
++		}
+ 	}
+ 
+ 	load_option->file_path_list_length = buf_offset - desc_offset;
+@@ -792,25 +802,25 @@ append_extra_args_ascii(uint8_t **data, size_t *data_size)
+ 	int i;
+ 	unsigned long usedchars=0;
+ 
+-	if (!data || *data)
++	if (!data || *data) {
++		errno = EINVAL;
+ 		return -1;
++	}
+ 
+ 	for (i=opts.optind; i < opts.argc; i++)	{
+-		int l = strlen(opts.argv[i]) + 1;
++		int l = strlen(opts.argv[i]);
+ 		int space = (i < opts.argc - 1) ? 1: 0;
+-		uint8_t *tmp = realloc(new_data, (usedchars + l + space));
++		uint8_t *tmp = realloc(new_data, (usedchars + l + space + 1));
+ 		if (tmp == NULL)
+ 			return -1;
+ 		new_data = tmp;
+ 		p = (char *)new_data + usedchars;
+ 		strcpy(p, opts.argv[i]);
+ 		usedchars += l;
+-		p += l;
+ 		/* Put a space between args */
+ 		if (space)
+-			p[usedchars++] = ' ';
+-		else
+-			p[usedchars] = '\0';
++			new_data[usedchars++] = ' ';
++		new_data[usedchars] = '\0';
+ 	}
+ 
+ 	if (!new_data)
+@@ -829,8 +839,10 @@ append_extra_args_unicode(uint8_t **data, size_t *data_size)
+ 	int i;
+ 	unsigned long usedchars=0;
+ 
+-	if (!data || *data)
++	if (!data || *data) {
++		errno = EINVAL;
+ 		return -1;
++	}
+ 
+ 	for (i = opts.optind; i < opts.argc; i++) {
+ 		int l = strlen(opts.argv[i]) + 1;
+@@ -871,37 +883,31 @@ append_extra_args_file(uint8_t **data, size_t *data_size)
+ 	size_t maxchars = 0;
+ 	char *buffer;
+ 
+-	if (!data) {
+-		fprintf(stderr, "internal error\n");
+-		exit(1);
++	if (!data || *data) {
++		errno = EINVAL;
++		return -1;
+ 	}
+ 
+ 	if (file && strncmp(file, "-", 1))
+ 		fd = open(file, O_RDONLY);
+ 
+-	if (fd == -1) {
+-		perror("Failed to open extra arguments file");
+-		exit(1);
+-	}
++	if (fd < 0)
++		return -1;
+ 
+ 	buffer = malloc(maxchars);
+ 	do {
+ 		if (maxchars - appended == 0) {
+ 			maxchars += 1024;
+ 			char *tmp = realloc(buffer, maxchars);
+-			if (tmp == NULL) {
+-				perror("Error reading extra arguments file");
+-				exit(1);
+-			}
++			if (tmp == NULL)
++				return -1;
+ 			buffer = tmp;
+ 		}
+ 		num_read = read(fd, buffer + appended, maxchars - appended);
+-		if (num_read < 0) {
+-			perror("Error reading extra arguments file");
+-			exit(1);
+-		} else if (num_read > 0) {
++		if (num_read < 0)
++			return -1;
++		else if (num_read > 0)
+ 			appended += num_read;
+-		}
+ 	} while (num_read > 0);
+ 
+ 	if (fd != STDIN_FILENO)
+@@ -935,14 +941,18 @@ append_extra_args(uint8_t **data, size_t *data_size)
+ 
+ 	if (opts.extra_opts_file) {
+ 		ret = append_extra_args_file(&new_data, &new_data_size);
+-		if (ret < 0)
++		if (ret < 0) {
++			fprintf(stderr, "efibootmgr: append_extra_args: %m\n");
+ 			return -1;
++		}
+ 	}
+ 	if (new_data_size) {
+ 		ret = add_new_data(data, data_size, new_data, new_data_size);
+ 		free(new_data);
+-		if (ret < 0)
++		if (ret < 0) {
++			fprintf(stderr, "efibootmgr: append_extra_args: %m\n");
+ 			return -1;
++		}
+ 		new_data = NULL;
+ 		new_data_size = 0;
+ 	}
+@@ -952,6 +962,7 @@ append_extra_args(uint8_t **data, size_t *data_size)
+ 	else
+ 		ret = append_extra_args_ascii(&new_data, &new_data_size);
+ 	if (ret < 0) {
++		fprintf(stderr, "efibootmgr: append_extra_args: %m\n");
+ 		if (new_data) /* this can't happen, but covscan believes */
+ 			free(new_data);
+ 		return -1;
+@@ -960,8 +971,10 @@ append_extra_args(uint8_t **data, size_t *data_size)
+ 		ret = add_new_data(data, data_size, new_data, new_data_size);
+ 		free(new_data);
+ 		new_data = NULL;
+-		if (ret < 0)
++		if (ret < 0) {
++			fprintf(stderr, "efibootmgr: append_extra_args: %m\n");
+ 			return -1;
++		}
+ 		new_data_size = 0;
+ 	}
+ 
+diff --git a/src/man/man8/efibootmgr.8 b/src/man/man8/efibootmgr.8
+index 96071d7..423bc16 100644
+--- a/src/man/man8/efibootmgr.8
++++ b/src/man/man8/efibootmgr.8
+@@ -93,9 +93,6 @@ Partition number containing the bootloader (defaults to 1)
+ \fB-q | --quiet\fR
+ Quiet mode - supresses output.
+ .TP
+-\fB--test \fIfilename\fB\fR
+-Don't write to NVRAM, write to \fIfilename\fR\&.
+-.TP
+ \fB-t | --timeout \fIseconds\fB\fR
+ Boot Manager timeout, in \fIseconds\fR\&.
+ .TP
+-- 
+1.9.3
+
