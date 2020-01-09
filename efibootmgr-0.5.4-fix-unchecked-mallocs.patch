@@ -1,0 +1,34 @@
+From 6732751adb24000a4d20c8dfdb895f4bd66e0eee Mon Sep 17 00:00:00 2001
+From: Peter Jones <pjones@redhat.com>
+Date: Mon, 13 Feb 2012 10:12:36 -0500
+Subject: [PATCH] Fix unchkecked malloc calls.
+
+---
+ src/efibootmgr/efibootmgr.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/src/efibootmgr/efibootmgr.c b/src/efibootmgr/efibootmgr.c
+index b984143..e3e922e 100644
+--- a/src/efibootmgr/efibootmgr.c
++++ b/src/efibootmgr/efibootmgr.c
+@@ -321,6 +321,8 @@ add_to_boot_order(uint16_t num)
+ 	old_data = (uint16_t *)&(boot_order.Data);
+ 	new_data_size = boot_order.DataSize + sizeof(uint16_t);
+ 	new_data = malloc(new_data_size);
++	if (!new_data)
++		return EFI_OUT_OF_RESOURCES;
+ 
+ 	new_data[0] = num;
+ 	memcpy(new_data+1, old_data, boot_order.DataSize);
+@@ -358,6 +360,8 @@ remove_from_boot_order(uint16_t num)
+ 	/* Start with the same size */
+ 	new_data_size = boot_order.DataSize;
+ 	new_data = malloc(new_data_size);
++	if (!new_data)
++		return EFI_OUT_OF_RESOURCES;
+ 	for (old_i=0,new_i=0;
+ 	     old_i < boot_order.DataSize / sizeof(uint16_t);
+ 	     old_i++) {
+-- 
+1.7.7.6
+
