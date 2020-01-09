@@ -1,7 +1,7 @@
 Summary: EFI Boot Manager
 Name: efibootmgr
 Version: 0.5.4
-Release: 12%{?dist}
+Release: 13%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://linux.dell.com/%{name}/
@@ -20,6 +20,7 @@ Patch1: efibootmgr-0.5.4-support-4k-sectors.patch
 Patch2: efibootmgr-0.5.4-fix-unchecked-mallocs.patch
 Patch3: efibootmgr-0.5.4-handle-bootorder-errors-rhbz924892.patch
 Patch4: efibootmgr-0.5.4-longvariables.patch
+Patch5: efibootmgr-0.5.4-no-hd-devpath-padding.patch
 
 %description
 %{name} displays and allows the user to edit the Intel Extensible
@@ -57,6 +58,10 @@ rm -rf %{buildroot}
 %doc README INSTALL COPYING
     
 %changelog
+* Thu Apr 09 2015 Peter Jones <pjones@redhat.com> - 0.5.4-13
+- Don't pad HD device paths on non-Itanium platforms.
+  Resolves: rhbz#1151681
+
 * Thu Sep 04 2014 Peter Jones <pjones@redhat.com> - 0.5.4-12
 - Display UEFI boot variables when the contents are > 1024 bytes
   Resolves: rhbz#1121782

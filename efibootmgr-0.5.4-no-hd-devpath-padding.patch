@@ -1,0 +1,34 @@
+From 6af62378a2a46f9347ce5eee7957035440c2ce92 Mon Sep 17 00:00:00 2001
+From: Peter Jones <pjones@redhat.com>
+Date: Thu, 9 Apr 2015 15:24:21 -0400
+Subject: [PATCH] Don't add HD() device path padding except on ia64.
+
+Nothing but IA64 appears to have needed it, and we turned it off in
+Fedora and RHEL 7 years ago without any bug reports.
+
+In contrast, the padding seems to break HyperV gen 2, which appears to
+be an otherwise compliant implementation.
+
+Resolves: rhbz#1151681
+Signed-off-by: Peter Jones <example@example.com>
+---
+ src/include/efi.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/include/efi.h b/src/include/efi.h
+index be667ae..d8d9ee2 100644
+--- a/src/include/efi.h
++++ b/src/include/efi.h
+@@ -294,7 +294,9 @@ typedef struct {
+ 	uint8_t  signature[16];
+ 	uint8_t  mbr_type;
+ 	uint8_t  signature_type;
++#ifdef __ia64__
+ 	uint8_t  padding[6]; /* Emperically needed */
++#endif
+ } __attribute__((packed)) HARDDRIVE_DEVICE_PATH;
+ 
+ typedef struct {
+-- 
+2.3.5
+
