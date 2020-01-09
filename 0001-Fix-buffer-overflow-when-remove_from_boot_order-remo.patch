@@ -1,7 +1,7 @@
-From ba13b5a7ccb4141e9918caf1c0272a5d72c4da61 Mon Sep 17 00:00:00 2001
+From 50ae3bd11b51f8e6cd86d4b4f2c8322a7036d095 Mon Sep 17 00:00:00 2001
 From: Lenny Szubowicz <lszubowi@redhat.com>
 Date: Tue, 6 Jan 2015 11:17:01 -0500
-Subject: [PATCH 21/31] Fix buffer overflow when remove_from_boot_order removes
+Subject: [PATCH] Fix buffer overflow when remove_from_boot_order removes
  nothing
 
 Deleting a boot entry via "-b xxxx -B" also attempts to remove
@@ -91,5 +91,5 @@ index eb13942..1b55125 100644
  }
  
 -- 
-2.7.4
+2.1.0
 

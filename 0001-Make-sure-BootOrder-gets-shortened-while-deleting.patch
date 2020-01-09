@@ -1,7 +1,7 @@
-From 2c20a1e3e209970c35322b4f282a717974de051a Mon Sep 17 00:00:00 2001
+From c10728e51158b47302fc198d5a4e1720a420761e Mon Sep 17 00:00:00 2001
 From: Peter Jones <pjones@redhat.com>
 Date: Mon, 2 Feb 2015 11:13:20 -0500
-Subject: [PATCH 22/31] Make sure BootOrder gets shortened while deleting.
+Subject: [PATCH] Make sure BootOrder gets shortened while deleting.
 
 So, what has happened is that a chunk of the patch for 1168019 got
 dropped in a merge conflict error, and as a result the variable is never
@@ -31,5 +31,5 @@ index 1b55125..b5d4147 100644
  				boot_order->data_size, boot_order->attributes);
  all_done:
 -- 
-2.7.4
+2.1.0
 

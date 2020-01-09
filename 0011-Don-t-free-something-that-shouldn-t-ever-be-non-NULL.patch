@@ -1,7 +1,7 @@
-From e7626f7aa1e5947f8235728fed5af862b27a719e Mon Sep 17 00:00:00 2001
+From 939f9700414785f51579ba25a2c76a90d161ec31 Mon Sep 17 00:00:00 2001
 From: Peter Jones <pjones@redhat.com>
 Date: Wed, 10 Sep 2014 16:15:27 -0400
-Subject: [PATCH 12/31] Don't free something that shouldn't ever be non-NULL.
+Subject: [PATCH 11/18] Don't free something that shouldn't ever be non-NULL.
 
 Instead, check and error if it's non-NULL.
 
@@ -53,5 +53,5 @@ index a131abe..f604a1a 100644
  	*data_size = usedchars * sizeof (*new_data);
  
 -- 
-2.7.4
+1.9.3
 

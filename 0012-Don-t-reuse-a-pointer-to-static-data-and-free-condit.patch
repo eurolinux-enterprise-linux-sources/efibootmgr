@@ -1,7 +1,7 @@
-From 7c9c04485631119423e94cdb207c22c3cd633323 Mon Sep 17 00:00:00 2001
+From ebf8073e904f21fd333f5a74bd3942c3e8840f0e Mon Sep 17 00:00:00 2001
 From: Peter Jones <pjones@redhat.com>
 Date: Wed, 10 Sep 2014 16:20:04 -0400
-Subject: [PATCH 13/31] Don't reuse a pointer to static data and free
+Subject: [PATCH 12/18] Don't reuse a pointer to static data and free
  conditionally.
 
 Instead, use a second pointer and free that, because poor covscan can't
@@ -49,5 +49,5 @@ index 431dc06..5a69fde 100644
  }
  
 -- 
-2.7.4
+1.9.3
 

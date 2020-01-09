@@ -1,7 +1,7 @@
-From efc08df165e7209e79d68b25017a970c4b6c0504 Mon Sep 17 00:00:00 2001
+From 6d7ef673de06cb7bfa5820848194e6eaad2fa8d4 Mon Sep 17 00:00:00 2001
 From: Peter Jones <pjones@redhat.com>
 Date: Wed, 10 Sep 2014 15:47:57 -0400
-Subject: [PATCH 08/31] Fix an error path not checking the return right in
+Subject: [PATCH 07/18] Fix an error path not checking the return right in
  make_linux_load_option
 
 Covscan once again.
@@ -45,5 +45,5 @@ index 7dc3c92..a131abe 100644
  		make_disk_load_option(opts.iface, buf + buf_offset, needed);
  		buf_offset += needed;
 -- 
-2.7.4
+1.9.3
 

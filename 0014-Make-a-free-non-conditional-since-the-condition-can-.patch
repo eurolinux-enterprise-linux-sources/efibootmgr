@@ -1,7 +1,7 @@
-From b18de3f385e732861de7425a20c77376813a554e Mon Sep 17 00:00:00 2001
+From 79c14e7a87eee655ae27427c560903e78e2c09a3 Mon Sep 17 00:00:00 2001
 From: Peter Jones <pjones@redhat.com>
 Date: Wed, 10 Sep 2014 16:24:03 -0400
-Subject: [PATCH 15/31] Make a free non-conditional since the condition can't
+Subject: [PATCH 14/18] Make a free non-conditional since the condition can't
  be ture.
 
 Covscan again.  I wonder if it'll complain about this.
@@ -12,7 +12,7 @@ Signed-off-by: Peter Jones <pjones@redhat.com>
  1 file changed, 1 insertion(+), 2 deletions(-)
 
 diff --git a/src/efibootmgr/efibootmgr.c b/src/efibootmgr/efibootmgr.c
-index 4ffb90e..d73c6aa 100644
+index 31807a9..f9c25e0 100644
 --- a/src/efibootmgr/efibootmgr.c
 +++ b/src/efibootmgr/efibootmgr.c
 @@ -463,8 +463,7 @@ read_boot_u16(const char *name)
@@ -26,5 +26,5 @@ index 4ffb90e..d73c6aa 100644
  }
  
 -- 
-2.7.4
+1.9.3
 

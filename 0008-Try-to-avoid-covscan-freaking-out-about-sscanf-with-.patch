@@ -1,7 +1,7 @@
-From ecc540afd9fde2361b10c31d62ff70f15ca7971a Mon Sep 17 00:00:00 2001
+From 2e40c869df425738ef06e7159a16adf5bf82c548 Mon Sep 17 00:00:00 2001
 From: Peter Jones <pjones@redhat.com>
 Date: Wed, 10 Sep 2014 15:57:26 -0400
-Subject: [PATCH 09/31] Try to avoid covscan freaking out about sscanf with %n.
+Subject: [PATCH 08/18] Try to avoid covscan freaking out about sscanf with %n.
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -55,5 +55,5 @@ index 904010b..4536a67 100644
  		if (len == 0 || line[len - 1] != '\n') {
  			break;
 -- 
-2.7.4
+1.9.3
 
