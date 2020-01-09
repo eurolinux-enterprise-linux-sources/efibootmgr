@@ -21,30 +21,57 @@
 #ifndef _EFIBOOTMGR_H
 #define _EFIBOOTMGR_H
 
+#define EFIBOOTMGR_IPV4 0
+#define EFIBOOTMGR_IPV6 1
+
+#define EFIBOOTMGR_IPV4_ORIGIN_DHCP		0
+#define EFIBOOTMGR_IPV4_ORIGIN_STATIC		1
+#define EFIBOOTMGR_IPV6_ORIGIN_STATIC		0
+#define EFIBOOTMGR_IPV6_ORIGIN_STATELESS	1
+#define EFIBOOTMGR_IPV6_ORIGIN_STATEFUL		2
+
+typedef enum {
+	boot,
+	driver,
+	sysprep,
+} ebm_mode;
+
 typedef struct {
 	int argc;
 	char **argv;
 	int optind;
 	char *disk;
+
+	int ip_version;
 	char *iface;
+	char *macaddr;
+	char *local_ip_addr;
+	char *remote_ip_addr;
+	char *gateway_ip_addr;
+	char *ip_netmask;
+	uint16_t ip_local_port;
+	uint16_t ip_remote_port;
+	uint16_t ip_protocol;
+	uint8_t ip_addr_origin;
+
 	char *loader;
-	char *label;
-	char *bootorder;
+	unsigned char *label;
+	char *order;
 	int keep_old_entries;
 	char *testfile;
 	char *extra_opts_file;
 	uint32_t part;
 	int edd_version;
-	int edd10_devicenum;
-	int bootnum;
+	uint32_t edd10_devicenum;
+	int num;
 	int bootnext;
 	int verbose;
 	int active;
+	int below4g;
+	int above4g;
 	int deduplicate;
-	int64_t acpi_hid;
-	int64_t acpi_uid;
-	unsigned int delete_boot:1;
-	unsigned int delete_bootorder:1;
+	unsigned int delete:1;
+	unsigned int delete_order:1;
 	unsigned int delete_bootnext:1;
 	unsigned int quiet:1;
 	unsigned int showversion:1;
@@ -54,9 +81,13 @@ typedef struct {
 	unsigned int forcegpt:1;
 	unsigned int set_timeout:1;
 	unsigned int delete_timeout:1;
-	unsigned short int timeout;
+	unsigned int set_mirror_lo:1;
+	unsigned int set_mirror_hi:1;
+	unsigned int no_order:1;
+	unsigned int driver:1;
+	unsigned int sysprep:1;
+	short int timeout;
 } efibootmgr_opt_t;
-
 
 extern efibootmgr_opt_t opts;
 

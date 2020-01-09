@@ -1,0 +1,43 @@
+From ad4f7b2b46aadb402dbfb1197151446d10c8ec6e Mon Sep 17 00:00:00 2001
+From: Peter Jones <pjones@redhat.com>
+Date: Mon, 13 Mar 2017 15:33:54 -0400
+Subject: [PATCH 1/2] RHEL 7.x popt doesn't have popt.pc, work around its
+ absense.
+
+Related: rhbz#1380825
+
+Signed-off-by: Peter Jones <pjones@redhat.com>
+---
+ src/Makefile | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/src/Makefile b/src/Makefile
+index 258bac1..453ddad 100644
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -21,15 +21,19 @@ ALL_SOURCES=$(EFIBOOTMGR_SOURCES)
+ 
+ efibootmgr : $(call objects-of,$(EFIBOOTMGR_SOURCES))
+ efibootmgr : PKGS=efivar efiboot
++efibootmgr : LIBS=popt
+ 
+ eficonman : $(call objects-of,$(EFICONMAN_SOURCES))
+-eficonman : PKGS=efivar efiboot popt
++eficonman : PKGS=efivar efiboot
++eficonman : LIBS=popt
+ 
+ efibootdump : $(call objects-of,$(EFIBOOTDUMP_SOURCES))
+-efibootdump : PKGS=efivar efiboot popt
++efibootdump : PKGS=efivar efiboot
++efibootdump : LIBS=popt
+ 
+ efibootnext : $(call objects-of,$(EFIBOOTNEXT_SOURCES))
+-efibootnext : PKGS=efivar efiboot popt
++efibootnext : PKGS=efivar efiboot
++efibootnext : LIBS=popt
+ 
+ deps : $(ALL_SOURCES)
+ 	$(MAKE) -f $(TOPDIR)/Make.deps deps SOURCES="$(ALL_SOURCES)" SUBDIR_CFLAGS="$(SUBDIR_CFLAGS)"
+-- 
+2.9.3
+

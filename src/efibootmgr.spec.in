@@ -1,6 +1,6 @@
 Summary: EFI Boot Manager
 Name: efibootmgr
-Version: 14
+Version: @@VERSION@@
 Release: 1%{?dist}
 Group: System Environment/Base
 License: GPLv2+

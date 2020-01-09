@@ -1,12 +1,15 @@
+%define efivar_version 31-1
+
 Summary: EFI Boot Manager
 Name: efibootmgr
-Version: 0.8.0
-Release: 5%{?dist}
+Version: 15
+Release: 2%{?dist}
 Group: System Environment/Base
 License: GPLv2+
-URL: http://github.com/vathpela/%{name}/
-BuildRequires: pciutils-devel, zlib-devel, git
-BuildRequires: efivar-libs, efivar-devel
+URL: http://github.com/rhinstaller/%{name}/
+BuildRequires: git, popt-devel
+BuildRequires: efivar-libs >= %{efivar_version}
+BuildRequires: efivar-devel >= %{efivar_version}
 BuildRoot: %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXXXX)
 # EFI/UEFI don't exist on PPC
 ExclusiveArch: x86_64 aarch64
@@ -15,29 +18,12 @@ ExclusiveArch: x86_64 aarch64
 Conflicts: elilo <= 3.6-6
 Obsoletes: elilo <= 3.6-6
 
-Source0: https://github.com/vathpela/%{name}/releases/download/%{name}-%{version}/%{name}-%{version}.tar.bz2
-Patch0000: 0001-Make-EFI-redhat-shim.efi-the-default-bootloader-1036.patch
-Patch0001: 0001-Fix-a-bad-allocation-size.patch
-Patch0002: 0002-Make-the-return-path-something-coverity-can-actually.patch
-Patch0003: 0003-Don-t-leak-our-socket-s-fd-when-determining-network-.patch
-Patch0004: 0004-Fix-another-leaked-fd.patch
-Patch0005: 0005-Fix-some-minor-memory-leaks.patch
-Patch0006: 0006-Make-sure-data-created-for-load-options-is-freed.patch
-Patch0007: 0007-Fix-an-error-path-not-checking-the-return-right-in-m.patch
-Patch0008: 0008-Try-to-avoid-covscan-freaking-out-about-sscanf-with-.patch
-Patch0009: 0009-Get-rid-of-an-invalid-comparison.patch
-Patch0010: 0010-Covscan-can-t-tell-that-we-re-not-filling-a-buffer.patch
-Patch0011: 0011-Don-t-free-something-that-shouldn-t-ever-be-non-NULL.patch
-Patch0012: 0012-Don-t-reuse-a-pointer-to-static-data-and-free-condit.patch
-Patch0013: 0013-Handle-the-case-where-there-are-no-EFI-variables.patch
-Patch0014: 0014-Make-a-free-non-conditional-since-the-condition-can-.patch
-Patch0015: 0015-Check-malloc-return.patch
-Patch0016: 0016-Check-open-s-return-correctly.patch
-Patch0017: 0017-Check-lseek-for-errors.patch
-Patch0018: 0018-Don-t-leak-our-partition-table-structures.patch
-Patch0019: 0001-Don-t-error-on-unset-BootOrder-when-we-re-trying-to-.patch
-Patch0020: 0001-Fix-buffer-overflow-when-remove_from_boot_order-remo.patch
-Patch0021: 0001-Make-sure-BootOrder-gets-shortened-while-deleting.patch
+Source0: https://github.com/rhinstaller/%{name}/releases/download/%{name}-%{version}/%{name}-%{version}.tar.bz2
+Patch0001: 0001-RHEL-7.x-popt-doesn-t-have-popt.pc-work-around-its-a.patch
+Patch0002: 0002-Don-t-build-efibootdump-on-RHEL-7.4.patch
+Patch0003: 0003-make_linux_load_option-check-data_size-correctly.patch
+
+%global efidir %(eval echo $(grep ^ID= /etc/os-release | sed -e 's/^ID=//' -e 's/rhel/redhat/'))
 
 %description
 %{name} displays and allows the user to edit the Intel Extensible
@@ -57,26 +43,57 @@ git config --unset user.email
 git config --unset user.name
 
 %build
-make %{?_smp_mflags} EXTRA_CFLAGS='%{optflags}'
+make %{?_smp_mflags} EXTRA_CFLAGS='%{optflags}' EFIDIR=%{efidir}
 
 %install
 rm -rf %{buildroot}
-mkdir -p %{buildroot}%{_sbindir} %{buildroot}%{_mandir}/man8
-install -p --mode 755 src/%{name}/%{name} %{buildroot}%{_sbindir}
-gzip -9 -c src/man/man8/%{name}.8 > src/man/man8/%{name}.8.gz
-touch -r src/man/man8/%{name}.8 src/man/man8/%{name}.8.gz
-install -p --mode 644 src/man/man8/%{name}.8.gz %{buildroot}%{_mandir}/man8
+%make_install EFIDIR=%{efidir} libdir=%{_libdir} \
+	bindir=%{_bindir} mandir=%{_mandir} localedir=%{_datadir}/locale/ \
+	includedir=%{_includedir} libexecdir=%{_libexecdir} \
+	datadir=%{_datadir}
 
 %clean
 rm -rf %{buildroot}
 
 %files
 %defattr(-,root,root,-)
-%{_sbindir}/%{name}
-%{_mandir}/man8/%{name}.8.gz
-%doc README INSTALL COPYING
+%{!?_licensedir:%global license %%doc}
+%license COPYING
+%{_sbindir}/*
+%{_mandir}/*/*.?.gz
+%doc README
 
 %changelog
+* Tue May 09 2017 Peter Jones <pjones@redhat.com> - 15-2
+- Fix some coverity issues
+  Related: rhbz#1380825
+
+* Mon Mar 13 2017 Peter Jones <pjones@redhat.com> - 15-1
+- Update to efivar 15 for fwupdate
+  Related: rhbz#1380825
+
+* Tue Jul 19 2016 Peter Jones <pjones@redhat.com> - 0.8.0-10
+- Another man page update for Memory Address Range Mirroring
+  Related: rhbz#1271412
+
+* Wed Jul 13 2016 Peter Jones <pjones@redhat.com> - 0.8.0-9
+- Update man page for Memory Address Range Mirroring
+  Related: rhbz#1271412
+
+* Mon Jun 06 2016 Peter Jones <pjones@redhat.com> - - 0.8.0-8
+- Add options for Memory Address Range Mirroring
+  Resolves: rhbz#1271412
+
+* Thu Jul 09 2015 Peter Jones <pjones@redhat.com> - 0.8.0-7
+- Fix a couple of problems parsing command line options QA is seeing.
+  Resolves: rhbz#1241411
+
+* Tue Jun 30 2015 Peter Jones <pjones@redhat.com> - 0.8.0-6
+- Handle -b and -o parsing in a way that matches the documentation.
+  Resolves: rhbz#1174964
+- Use the right GUID when setting boot entries active/inactive
+  Resolves: rhbz#1221771
+
 * Mon Feb 02 2015 Peter Jones <pjones@redhat.com> - 0.8.0-5
 - Fix patch merge error from -4
   Resolves: rhbz#1188313

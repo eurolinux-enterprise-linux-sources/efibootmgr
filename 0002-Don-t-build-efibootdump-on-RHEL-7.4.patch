@@ -1,0 +1,41 @@
+From 09df652105eb466390c00b8599d777e6fed45c41 Mon Sep 17 00:00:00 2001
+From: Peter Jones <pjones@redhat.com>
+Date: Mon, 13 Mar 2017 15:48:09 -0400
+Subject: [PATCH 2/2] Don't build efibootdump on RHEL 7.4...
+
+Because popt is ancient (1.13 released in 2007, as opposed to 1.16
+released in 2010), it does not have POPT_ARG_ARGV, which efibootdump
+uses.  Since there's no feature for efibootdump, and we've never shipped
+it, just nerf it out of the build.
+
+Signed-off-by: Peter Jones <pjones@redhat.com>
+---
+ src/Makefile | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/src/Makefile b/src/Makefile
+index 453ddad..162f552 100644
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -7,7 +7,7 @@ include $(TOPDIR)/Make.defaults
+ 
+ SUBDIR_CFLAGS = -I$(SRCDIR)/include
+ 
+-BINTARGETS=efibootmgr efibootdump
++BINTARGETS=efibootmgr
+ TARGETS=$(BINTARGETS)
+ 
+ all : deps $(TARGETS)
+@@ -45,9 +45,7 @@ clean :
+ install :
+ 	$(INSTALL) -d -m 755 $(DESTDIR)/$(sbindir)/
+ 	$(INSTALL) -m 755 efibootmgr $(DESTDIR)/$(sbindir)/efibootmgr
+-	$(INSTALL) -m 755 efibootdump $(DESTDIR)/$(sbindir)/efibootdump
+ 	$(INSTALL) -d -m 755 $(DESTDIR)/$(mandir)/man8/
+ 	$(INSTALL) -m 644 efibootmgr.8 $(DESTDIR)/$(mandir)/man8/efibootmgr.8
+-	$(INSTALL) -m 644 efibootdump.8 $(DESTDIR)/$(mandir)/man8/efibootdump.8
+ 
+ .PHONY : all deps clean install
+-- 
+2.9.3
+
