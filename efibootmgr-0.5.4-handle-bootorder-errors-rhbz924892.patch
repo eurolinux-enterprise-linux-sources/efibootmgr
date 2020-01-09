@@ -1,0 +1,48 @@
+From: Nigel Croxon <nigel.croxon@hp.com>
+Subject: efibootmgr -o can make fw call to Set variable with invalid data size
+Date: 2013-04-04 11:36:25 EDT 
+
+---
+ src/efibootmgr/efibootmgr.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff -urpN efibootmgr-0.5.4/src/efibootmgr/efibootmgr.c.924892 efibootmgr-0.5.4/src/efibootmgr/efibootmgr.c
+--- efibootmgr-0.5.4/src/efibootmgr/efibootmgr.c.924892	2013-08-07 16:03:55.460525818 -0400
++++ efibootmgr-0.5.4/src/efibootmgr/efibootmgr.c	2013-08-07 16:05:58.701876077 -0400
+@@ -605,10 +605,10 @@ is_current_boot_entry(int b)
+ }
+ 
+ 
+-static int
++static unsigned long
+ parse_boot_order(char *buffer, uint16_t *order, int length)
+ {
+-	int i;
++	unsigned long i;
+ 	int num, rc;
+ 
+ 	for (i=0; i<length && *buffer; i++) {
+@@ -616,12 +616,12 @@ parse_boot_order(char *buffer, uint16_t
+ 		if (rc == 1) order[i] = num & 0xFFFF;
+ 		else {
+ 			fprintf(stderr,"\nInvalid hex characters in boot order: %s\n\n",buffer);
+-			return -1;
++			return 0UL;
+ 		}
+ 		/* make sure this is an existing boot entry */
+ 		if (!is_current_boot_entry(order[i])) {
+ 			fprintf (stderr,"\nboot entry %X does not exist\n\n",order[i]);
+-			return -1;
++			return 0UL;
+ 		}
+ 
+ 		/* Advance to the comma */ 
+@@ -644,7 +644,7 @@ set_boot_order()
+ 	fill_var(&boot_order, "BootOrder");
+ 
+ 	boot_order.DataSize = parse_boot_order(opts.bootorder, n, 1024/sizeof(uint16_t)) * sizeof(uint16_t);
+-	if (boot_order.DataSize < 0)
++	if (boot_order.DataSize == 0UL)
+ 		return 1;
+ 	else
+ 		return create_or_edit_variable(&boot_order);
