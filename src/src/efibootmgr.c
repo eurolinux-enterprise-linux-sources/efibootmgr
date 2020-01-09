@@ -31,6 +31,8 @@
 
 */
 
+#include "fix_coverity.h"
+
 #include <ctype.h>
 #include <err.h>
 #include <errno.h>
@@ -83,6 +85,8 @@ free_vars(list_t *head)
 
 	list_for_each_safe(pos, n, head) {
 		entry = list_entry(pos, var_entry_t, list);
+		if (entry->name)
+			free(entry->name);
 		if (entry->data)
 			free(entry->data);
 		list_del(&(entry->list));
@@ -126,7 +130,11 @@ read_vars(char **namelist,
 			 * invalid to set it anyway */
 			entry->attributes = entry->attributes & ~(1 << 31);
 
-			entry->name = namelist[i];
+			entry->name = strdup(namelist[i]);
+			if (!entry->name) {
+				efi_error("strdup(\"%s\") failed", namelist[i]);
+				goto err;
+			}
 			entry->guid = EFI_GLOBAL_GUID;
 			list_add_tail(&entry->list, head);
 		}
@@ -716,6 +724,12 @@ parse_order(const char *prefix, char *buffer, uint16_t **order, size_t *length)
 		buf += comma + 1;
 	}
 
+	if (num == 0) {
+		*order = NULL;
+		*length = 0;
+		return 0;
+	}
+
 	data = calloc(num, sizeof (*data));
 	if (!data)
 		return -1;
@@ -851,8 +865,11 @@ set_order(const char *order_name, const char *prefix, int keep_old_entries)
 
 	rc = construct_order(order_name, opts.order, keep_old_entries,
 				(uint16_t **)&data, &data_size);
-	if (rc < 0 || data_size == 0)
+	if (rc < 0 || data_size == 0) {
+		if (data) /* this can't happen, but clang analyzer believes */
+			free(data);
 		return rc;
+	}
 
 	rc = asprintf(&name, "%sOrder", prefix);
 	if (rc < 0)
@@ -949,7 +966,6 @@ show_vars(const char *prefix)
 				error(20, "Could not parse device path");
 			printf("\t%s", text_path);
 			free(text_path);
-			text_path_len = 0;
 			/* Print optional data */
 
 			rc = efi_loadopt_optional_data(load_option,
@@ -1166,8 +1182,8 @@ static void
 show_mirror(void)
 {
 	int status;
-	int below4g, above4g;
-	int rbelow4g, rabove4g;
+	int below4g = 0, above4g = 0;
+	int rbelow4g = 0, rabove4g = 0;
 
 	if (get_mirror(0, &below4g, &above4g, &status) == 0) {
 		if (status == 0) {
@@ -1246,7 +1262,7 @@ usage()
 	printf("\t-N | --delete-bootnext delete BootNext\n");
 	printf("\t-o | --bootorder XXXX,YYYY,ZZZZ,...     explicitly set BootOrder (hex)\n");
 	printf("\t-O | --delete-bootorder delete BootOrder\n");
-	printf("\t-p | --part part        (defaults to 1) containing loader\n");
+	printf("\t-p | --part part        partition containing loader (defaults to 1 on partitioned devices)\n");
 	printf("\t-q | --quiet            be quiet\n");
 	printf("\t-t | --timeout seconds  set boot manager timeout waiting for user input.\n");
 	printf("\t-T | --delete-timeout   delete Timeout.\n");
@@ -1271,7 +1287,7 @@ set_default_opts()
 	opts.loader          = DEFAULT_LOADER;
 	opts.label           = (unsigned char *)"Linux";
 	opts.disk            = "/dev/sda";
-	opts.part            = 1;
+	opts.part            = -1;
 }
 
 static void
@@ -1279,6 +1295,7 @@ parse_opts(int argc, char **argv)
 {
 	int c, rc;
 	unsigned int num;
+	int snum;
 	float fnum;
 	int option_index = 0;
 
@@ -1380,14 +1397,16 @@ parse_opts(int argc, char **argv)
 			opts.disk = optarg;
 			break;
 		case 'e':
-			rc = sscanf(optarg, "%u", &num);
+			rc = sscanf(optarg, "%d", &snum);
 			if (rc == 1)
-				opts.edd_version = num;
+				opts.edd_version = snum;
 			else
 				errorx(30, "invalid numeric value %s\n",
 				       optarg);
-			if (num != 0 && num != 1 && num != 3)
-				errorx(31, "invalid EDD version %d\n", num);
+			if (snum == -1)
+				snum = 0;
+			if (snum != 0 && snum != 1 && snum != 3)
+				errorx(31, "invalid EDD version %d\n", snum);
 			break;
 		case 'E':
 			rc = sscanf(optarg, "%x", &num);
@@ -1517,6 +1536,10 @@ parse_opts(int argc, char **argv)
 					       "invalid numeric value %s\n",
 					       optarg);
 			}
+                        /* XXX efivar-36 accidentally doesn't have a public
+                         * header for this */
+			extern int efi_set_verbose(int verbosity, FILE *errlog);
+			efi_set_verbose(opts.verbose - 2, stderr);
 			break;
 		case 'V':
 			opts.showversion = 1;
@@ -1562,7 +1585,6 @@ main(int argc, char **argv)
 		"SysPrepOrder"
 	};
 
-	putenv("LIBEFIBOOT_REPORT_GPT_ERRORS=1");
 	set_default_opts();
 	parse_opts(argc, argv);
 	if (opts.showversion) {
@@ -1631,10 +1653,12 @@ main(int argc, char **argv)
 			      prefices[mode]);
 
 		/* Put this boot var in the right Order variable */
-		if (new_entry && !opts.no_order)
+		if (new_entry && !opts.no_order) {
 			ret = add_to_order(order_name[mode], new_entry->num);
-		if (ret < 0)
-			error(6, "Could not add entry to %s", order_name[mode]);
+			if (ret < 0)
+				error(6, "Could not add entry to %s",
+				      order_name[mode]);
+		}
 	}
 
 	if (opts.delete_order) {

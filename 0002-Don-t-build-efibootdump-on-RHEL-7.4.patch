@@ -1,4 +1,4 @@
-From 09df652105eb466390c00b8599d777e6fed45c41 Mon Sep 17 00:00:00 2001
+From d67065dc8bbca6c7b921cf57d4a30e8c700b3a8e Mon Sep 17 00:00:00 2001
 From: Peter Jones <pjones@redhat.com>
 Date: Mon, 13 Mar 2017 15:48:09 -0400
 Subject: [PATCH 2/2] Don't build efibootdump on RHEL 7.4...
@@ -14,7 +14,7 @@ Signed-off-by: Peter Jones <pjones@redhat.com>
  1 file changed, 1 insertion(+), 3 deletions(-)
 
 diff --git a/src/Makefile b/src/Makefile
-index 453ddad..162f552 100644
+index 453ddadfca2..162f5526b3c 100644
 --- a/src/Makefile
 +++ b/src/Makefile
 @@ -7,7 +7,7 @@ include $(TOPDIR)/Make.defaults
@@ -37,5 +37,5 @@ index 453ddad..162f552 100644
  
  .PHONY : all deps clean install
 -- 
-2.9.3
+2.17.1
 

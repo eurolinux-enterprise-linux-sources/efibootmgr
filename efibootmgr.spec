@@ -1,8 +1,8 @@
-%define efivar_version 31-1
+%define efivar_version 36-4
 
 Summary: EFI Boot Manager
 Name: efibootmgr
-Version: 15
+Version: 17
 Release: 2%{?dist}
 Group: System Environment/Base
 License: GPLv2+
@@ -21,7 +21,7 @@ Obsoletes: elilo <= 3.6-6
 Source0: https://github.com/rhinstaller/%{name}/releases/download/%{name}-%{version}/%{name}-%{version}.tar.bz2
 Patch0001: 0001-RHEL-7.x-popt-doesn-t-have-popt.pc-work-around-its-a.patch
 Patch0002: 0002-Don-t-build-efibootdump-on-RHEL-7.4.patch
-Patch0003: 0003-make_linux_load_option-check-data_size-correctly.patch
+Patch0003: 0003-remove-extra-decl.patch
 
 %global efidir %(eval echo $(grep ^ID= /etc/os-release | sed -e 's/^ID=//' -e 's/rhel/redhat/'))
 
@@ -64,6 +64,18 @@ rm -rf %{buildroot}
 %doc README
 
 %changelog
+* Wed Jun 13 2018 Peter Jones <pjones@redhat.com> - 17-2
+- Try to make covscan actually complete the scan...
+  Related: rhbz#1570032
+  Related: rhbz#1558937
+  Related: rhbz#1520533
+
+* Sun Jun 10 2018 Peter Jones <pjones@redhat.com> - 17-1
+- Update to efibootmgr 17
+  Related: rhbz#1570032
+  Related: rhbz#1558937
+  Resolves: rhbz#1520533
+
 * Tue May 09 2017 Peter Jones <pjones@redhat.com> - 15-2
 - Fix some coverity issues
   Related: rhbz#1380825

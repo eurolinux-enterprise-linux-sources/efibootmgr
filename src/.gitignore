@@ -8,3 +8,5 @@ core.*
 efibootmgr*.zip
 efibootmgr.spec
 .*.d
+cov-int
+scan-results/

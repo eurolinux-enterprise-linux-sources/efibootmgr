@@ -18,6 +18,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "fix_coverity.h"
+
 #include <ctype.h>
 #include <err.h>
 #include <stdio.h>
@@ -331,8 +333,11 @@ make_linux_load_option(uint8_t **data, size_t *data_size,
 						       opts.ip_remote_port,
 						       opts.ip_protocol,
 						       opts.ip_addr_origin);
-		if (needed < 0)
+		if (needed < 0) {
+			efi_error("efi_generate_ipv4_device_path() = %zd (failed)",
+					needed);
 			return -1;
+		}
 		if (data_size && *data_size) {
 			dp = malloc(needed);
 
@@ -349,6 +354,8 @@ make_linux_load_option(uint8_t **data, size_t *data_size,
 							opts.ip_addr_origin);
 			if (needed < 0) {
 				free(dp);
+				efi_error("efi_generate_ipv4_device_path() = %zd (failed)",
+						needed);
 				return -1;
 			}
 		}
@@ -378,8 +385,11 @@ make_linux_load_option(uint8_t **data, size_t *data_size,
 						opts.disk, opts.part,
 						opts.loader, options,
 						opts.edd10_devicenum);
-		if (needed < 0)
+		if (needed < 0) {
+			efi_error("efi_generate_file_device_path_from_esp() = %zd (failed)",
+                                  needed);
 			return -1;
+		}
 
 		if (data_size && *data_size) {
 			dp = malloc(needed);
@@ -391,13 +401,18 @@ make_linux_load_option(uint8_t **data, size_t *data_size,
 						opts.loader, options,
 						opts.edd10_devicenum);
 			if (needed < 0) {
+			        efi_error("efi_generate_file_device_path_from_esp() = %zd (failed)",
+                                          needed);
 				free(dp);
 				return -1;
 			}
 		}
 	}
 
-	needed = efi_loadopt_create(*data, *data_size,
+	size_t data_size_tmp = 0;
+	if (data_size)
+		data_size_tmp = *data_size;
+	needed = efi_loadopt_create(*data, data_size_tmp,
 				      attributes, dp, needed, opts.label,
 				      optional_data, optional_data_size);
 	if (dp) {
@@ -406,8 +421,10 @@ make_linux_load_option(uint8_t **data, size_t *data_size,
 		dp = NULL;
 		errno = saved_errno;
 	}
-	if (needed < 0)
+	if (needed < 0) {
+		efi_error("efi_loadopt_create() = %zd (failed)", needed);
 		return -1;
+        }
 
 	return needed;
 }
