@@ -1,0 +1,42 @@
+From: Stuart Hayes <stuart_hayes@dell.com>
+Date: 2014-07-23 15:45:40 EDT
+Subject: Show variable names when contents are > 1024 bytes
+
+Here's a patch that will make efibootmgr behave better when one of the
+variables is longer than 1024.  It can't atually read the variable
+(sysfs / kernel limit), but if it sees that a BootXXXX efi variable but fails
+to read it, it will still show that variable (with no path/description),
+and it will continue to show the rest of the BootXXXX variables instead
+of aborting.  This should allow anaconda to successfully create a boot
+entry during install even if there exists a BootXXXX variable that's longer
+than 1024 bytes.
+
+diff -purN efibootmgr-0.5.4/src/efibootmgr/efibootmgr.c efibootmgr-0.5.4-stu/src/efibootmgr/efibootmgr.c
+--- efibootmgr-0.5.4/src/efibootmgr/efibootmgr.c	2014-07-23 14:16:46.413995657 -0400
++++ efibootmgr-0.5.4-stu/src/efibootmgr/efibootmgr.c	2014-07-23 13:53:56.034997879 -0400
+@@ -129,7 +129,6 @@ read_vars(struct dirent **namelist,
+ 
+ 			status = read_variable(namelist[i]->d_name,
+ 					       &entry->var_data);
+-			if (status != EFI_SUCCESS) break;
+ 			entry->name = namelist[i];
+ 			list_add_tail(&entry->list, head);
+ 		}
+@@ -659,7 +658,7 @@ show_boot_vars()
+ 	EFI_LOAD_OPTION *load_option;
+ 	EFI_DEVICE_PATH *path;
+ 	char text_path[1024], *p;
+-	unsigned long optional_data_len=0;
++	long optional_data_len=0;
+ 
+ 	list_for_each(pos, &boot_entry_list) {
+ 		boot = list_entry(pos, var_entry_t, list);
+@@ -687,7 +686,7 @@ show_boot_vars()
+ 				boot->var_data.DataSize -
+ 				load_option->file_path_list_length -
+ 				((char *)path - (char *)load_option);
+-			if (optional_data_len) {
++			if (optional_data_len > 0) {
+ 				p = text_path;
+ 				p += strlen(text_path);
+ 				unparse_raw_text(p, ((uint8_t *)path) +

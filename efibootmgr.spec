@@ -1,11 +1,11 @@
 Summary: EFI Boot Manager
 Name: efibootmgr
 Version: 0.5.4
-Release: 11%{?dist}
+Release: 12%{?dist}
 Group: System Environment/Base
 License: GPLv2+
 URL: http://linux.dell.com/%{name}/
-BuildRequires: pciutils-devel, zlib-devel
+BuildRequires: pciutils-devel, zlib-devel, git
 BuildRoot: %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXXXX)
 # EFI/UEFI don't exist on PPC
 ExclusiveArch: %{ix86} x86_64 ia64
@@ -19,6 +19,7 @@ Patch0: efibootmgr-0.5.4-default-to-grub.patch
 Patch1: efibootmgr-0.5.4-support-4k-sectors.patch
 Patch2: efibootmgr-0.5.4-fix-unchecked-mallocs.patch
 Patch3: efibootmgr-0.5.4-handle-bootorder-errors-rhbz924892.patch
+Patch4: efibootmgr-0.5.4-longvariables.patch
 
 %description
 %{name} displays and allows the user to edit the Intel Extensible
@@ -28,10 +29,12 @@ http://developer.intel.com/technology/efi/efi.htm and http://uefi.org/.
 
 %prep
 %setup -q
-%patch0 -p1
-%patch1 -p1
-%patch2 -p1
-%patch3 -p1
+git init
+git config user.email "example@example.com"
+git config user.name "RHEL Ninjas"
+git add .
+git commit -a -q -m "%{version} baseline."
+git am %{patches} </dev/null
 
 %build
 make %{?_smp_mflags} EXTRA_CFLAGS='%{optflags}'
@@ -54,6 +57,10 @@ rm -rf %{buildroot}
 %doc README INSTALL COPYING
     
 %changelog
+* Thu Sep 04 2014 Peter Jones <pjones@redhat.com> - 0.5.4-12
+- Display UEFI boot variables when the contents are > 1024 bytes
+  Resolves: rhbz#1121782
+
 * Wed Aug 07 2013 Peter Jones <pjones@redhat.com> - 0.5.4-11
 - Don't try to make 0-sized BootOrder
   Resolves: rhbz#924892
